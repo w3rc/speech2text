@@ -313,10 +313,21 @@ class SpeechToTextApp:
                 
             # Transcribe using OpenAI Whisper
             with open(temp_filename, 'rb') as audio_file:
-                transcript = self.client.audio.transcriptions.create(
-                    model="whisper-1",
-                    file=audio_file
-                )
+                transcription_settings = settings.get_transcription_settings()
+                
+                transcript_params = {
+                    "model": transcription_settings.get("model", "whisper-1"),
+                    "file": audio_file,
+                    "language": transcription_settings.get("language", "en"),
+                    "temperature": transcription_settings.get("temperature", 0.0)
+                }
+                
+                # Add prompt if specified
+                prompt = transcription_settings.get("prompt", "").strip()
+                if prompt:
+                    transcript_params["prompt"] = prompt
+                
+                transcript = self.client.audio.transcriptions.create(**transcript_params)
                 
             # Update UI with results
             self.root.after(0, lambda: self.display_transcription(transcript.text))

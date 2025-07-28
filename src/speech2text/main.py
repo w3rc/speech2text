@@ -2,14 +2,14 @@
 
 import sys
 import tkinter as tk
-from .speech_to_text_app import SpeechToTextApp
+from .modern_speech_app import ModernSpeechToTextApp
 
 
 def main() -> None:
-    """Main entry point for the Speech2Text application."""
+    """Main entry point for the modern Speech2Text application."""
     try:
         root = tk.Tk()
-        app = SpeechToTextApp(root)
+        app = ModernSpeechToTextApp(root)
         root.mainloop()
     except KeyboardInterrupt:
         print("\nApplication interrupted by user")

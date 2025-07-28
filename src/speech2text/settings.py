@@ -35,6 +35,12 @@ class SettingsManager:
                 "chunk_size": 1024,
                 "format": "paInt16"
             },
+            "transcription": {
+                "language": "en",  # English by default
+                "model": "whisper-1",
+                "temperature": 0.0,  # More deterministic
+                "prompt": ""  # Optional context prompt
+            },
             "ui": {
                 "window_geometry": "600x500",
                 "theme": "default"
@@ -191,6 +197,10 @@ class SettingsManager:
     def get_ui_settings(self) -> Dict[str, Any]:
         """Get UI configuration settings."""
         return self.get("ui", self.defaults["ui"])
+    
+    def get_transcription_settings(self) -> Dict[str, Any]:
+        """Get transcription configuration settings."""
+        return self.get("transcription", self.defaults["transcription"])
     
     def get_output_settings(self) -> Dict[str, Any]:
         """Get output configuration settings."""
