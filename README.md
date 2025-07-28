@@ -40,7 +40,9 @@ A modern Windows desktop application for real-time speech-to-text transcription 
 
 3. **Run the application**
    ```bash
-   uv run python speech_to_text_app.py
+   python run.py
+   # or using uv
+   uv run python run.py
    ```
 
 4. **Configure your API key**
@@ -81,14 +83,24 @@ The application stores settings in a local configuration file:
 
 ```
 speech2text/
-├── speech_to_text_app.py   # Main application
-├── settings.py             # Configuration management
-├── settings_dialog.py      # Settings UI
+├── src/speech2text/        # Main package
+│   ├── __init__.py         # Package initialization
+│   ├── main.py             # Entry point
+│   ├── speech_to_text_app.py  # Main application
+│   ├── settings.py         # Configuration management
+│   └── settings_dialog.py  # Settings UI
+├── docs/                   # Documentation
+│   ├── CONTRIBUTING.md     # Contribution guidelines
+│   ├── CHANGELOG.md        # Version history
+│   └── setup_instructions.txt  # Legacy setup guide
+├── tests/                  # Test files
+│   ├── test_settings.py    # Settings tests
+│   └── README.md           # Testing guide
+├── assets/                 # Assets (icons, etc.)
+├── run.py                  # Simple launcher script
 ├── pyproject.toml         # Project configuration
 ├── README.md              # This file
-├── LICENSE                # MIT license
-├── CONTRIBUTING.md        # Contribution guidelines
-└── CHANGELOG.md           # Version history
+└── LICENSE                # MIT license
 ```
 
 ### Setting up Development Environment
@@ -104,7 +116,9 @@ speech2text/
    ```
 4. **Run the application in development mode**
    ```bash
-   uv run python speech_to_text_app.py
+   python run.py
+   # or using uv
+   uv run python run.py
    ```
 
 ### Code Style

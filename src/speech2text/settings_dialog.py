@@ -8,7 +8,7 @@ API key management, audio parameters, and output preferences.
 import tkinter as tk
 from tkinter import ttk, messagebox, filedialog
 from typing import Optional, Callable
-from settings import settings
+from .settings import settings
 
 
 class SettingsDialog:

@@ -10,8 +10,8 @@ import os
 from datetime import datetime
 from typing import Optional
 from openai import OpenAI
-from settings import settings
-from settings_dialog import SettingsDialog
+from .settings import settings
+from .settings_dialog import SettingsDialog
 
 
 class SpeechToTextApp:
