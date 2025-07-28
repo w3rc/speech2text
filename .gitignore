@@ -1,0 +1,32 @@
+# Environment variables
+.env
+
+# Python-generated files
+__pycache__/
+*.py[oc]
+build/
+dist/
+wheels/
+*.egg-info
+
+# Virtual environments
+.venv
+
+# Audio files
+*.wav
+*.mp3
+*.m4a
+
+# Temporary files
+*.tmp
+temp_*
+nul
+
+# Settings and user data
+.key
+config.json
+
+# OS-specific files
+.DS_Store
+Thumbs.db
+desktop.ini

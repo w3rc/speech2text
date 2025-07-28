@@ -1,0 +1,6 @@
+openai
+pyaudio
+tkinter
+threading
+tempfile
+wave

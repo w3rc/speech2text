@@ -1,0 +1,56 @@
+Windows Speech-to-Text App Setup Instructions
+==============================================
+
+Prerequisites:
+1. Python 3.8 or higher installed
+2. uv package manager (install from https://docs.astral.sh/uv/getting-started/installation/)
+3. OpenAI API key (get from https://platform.openai.com/api-keys)
+
+Installation Steps:
+1. Clone or download the project files
+
+2. Install dependencies using uv:
+   uv sync
+
+   Note: If pyaudio installation fails on Windows, you may need to install it separately:
+   uv add --dev pipwin
+   uv run pipwin install pyaudio
+
+3. Set up your OpenAI API key:
+   - Copy .env.example to .env
+   - Edit .env and replace "your_openai_api_key_here" with your actual API key:
+     OPENAI_API_KEY=sk-your-actual-api-key-here
+
+4. Run the application:
+   uv run python speech_to_text_app.py
+
+Usage:
+1. The app will automatically load your API key from the .env file
+2. Check that the API status shows "✓ API Key loaded from .env"
+3. Click "Start Recording" and speak into your microphone
+4. Click "Stop Recording" when finished speaking
+5. The transcribed text will appear in the text area
+6. Use "Clear Text" to clear the display
+7. Use "Save Text" to save transcription to a file
+
+Project Structure:
+- speech_to_text_app.py - Main application
+- pyproject.toml - Project configuration and dependencies
+- .env - Your API key (keep this file private!)
+- .env.example - Template for environment variables
+- .gitignore - Excludes sensitive files from git
+
+Features:
+- Automatic API key loading from .env file
+- Real-time microphone recording
+- OpenAI Whisper API integration for accurate transcription
+- Simple, user-friendly GUI
+- Text saving functionality
+- Comprehensive error handling and user feedback
+
+Troubleshooting:
+- If API status shows "✗ No API key found", check your .env file
+- If you get audio device errors, check your microphone permissions
+- Make sure your API key is valid and has sufficient credits
+- Ensure your internet connection is stable for API calls
+- For dependency issues, try: uv sync --reinstall
