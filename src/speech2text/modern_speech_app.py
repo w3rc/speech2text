@@ -29,7 +29,7 @@ class ModernSpeechToTextApp:
         self.root.minsize(700, 500)
         
         # Apply dark theme
-        DarkTheme.apply_to_root(self.root)
+        DarkTheme.apply_theme(self.root)
         
         # Application state
         self.recording = False
@@ -79,13 +79,16 @@ class ModernSpeechToTextApp:
     
     def _setup_ui(self) -> None:
         """Set up the modern user interface."""
+        # Configure window with neon theme
+        self.root.configure(bg=DarkTheme.COLORS['bg_primary'])
+        
         # Configure grid weights
         self.root.columnconfigure(0, weight=1)
         self.root.rowconfigure(0, weight=1)
         
-        # Main container with two panes
-        main_container = ttk.Frame(self.root, style='Dark.TFrame')
-        main_container.grid(row=0, column=0, sticky="nsew", padx=20, pady=20)
+        # Main container with glassmorphism effect
+        main_container = tk.Frame(self.root, bg=DarkTheme.COLORS['bg_primary'])
+        main_container.grid(row=0, column=0, sticky="nsew", padx=30, pady=30)
         main_container.columnconfigure(0, weight=1)
         main_container.columnconfigure(1, weight=0)  # Fixed width for activity panel
         main_container.rowconfigure(0, weight=1)
@@ -186,8 +189,8 @@ class ModernSpeechToTextApp:
         )
         meter_label.grid(row=0, column=0, sticky="w", pady=(0, 5))
         
-        self.audio_level_meter = AudioLevelMeter(meter_frame, width=400, height=50)
-        self.audio_level_meter.grid(row=1, column=0, sticky="ew")
+        self.audio_level_meter = AudioLevelMeter(meter_frame, size=200)
+        self.audio_level_meter.grid(row=1, column=0, pady=10)
         
         # Recording button
         button_frame = ttk.Frame(card_content, style='Card.TFrame')
@@ -236,27 +239,65 @@ class ModernSpeechToTextApp:
         text_frame.columnconfigure(0, weight=1)
         text_frame.rowconfigure(0, weight=1)
         
-        # Create scrolled text with dark theme
-        self.text_display = scrolledtext.ScrolledText(
+        # Create text widget without automatic scrollbar
+        self.text_display = tk.Text(
             text_frame,
             wrap=tk.WORD,
             font=DarkTheme.FONTS['body'],
-            bg=DarkTheme.COLORS['bg_tertiary'],
+            bg=DarkTheme.COLORS['bg_secondary'],
             fg=DarkTheme.COLORS['text_primary'],
-            insertbackground=DarkTheme.COLORS['text_primary'],
-            selectbackground=DarkTheme.COLORS['accent_primary'],
+            insertbackground=DarkTheme.COLORS['accent_primary'],
+            selectbackground=DarkTheme.COLORS['accent_glow'],
             selectforeground=DarkTheme.COLORS['text_primary'],
             relief='flat',
-            borderwidth=0
+            borderwidth=1,
+            highlightbackground=DarkTheme.COLORS['border_glow'],
+            highlightthickness=1
         )
         self.text_display.grid(row=0, column=0, sticky="nsew")
         
-        # Configure scrollbar colors
-        self.text_display.vbar.config(
+        # Create custom dark scrollbar that only shows when needed
+        self.scrollbar = tk.Scrollbar(
+            text_frame,
+            orient="vertical",
+            command=self.text_display.yview,
             bg=DarkTheme.COLORS['bg_secondary'],
-            troughcolor=DarkTheme.COLORS['bg_tertiary'],
-            activebackground=DarkTheme.COLORS['accent_primary']
+            troughcolor=DarkTheme.COLORS['bg_primary'],
+            activebackground=DarkTheme.COLORS['bg_hover'],
+            highlightbackground=DarkTheme.COLORS['bg_primary'],
+            highlightcolor=DarkTheme.COLORS['bg_primary'],
+            borderwidth=0,
+            highlightthickness=0,
+            relief='flat',
+            elementborderwidth=0,
+            width=12
         )
+        
+        # Configure text widget to use scrollbar
+        self.text_display.config(yscrollcommand=self.scrollbar.set)
+        
+        # Function to show/hide scrollbar based on content
+        def on_text_change(*args):
+            # Get the fraction of visible content
+            top, bottom = self.scrollbar.get()
+            
+            # Show scrollbar only if not all content is visible
+            if top != 0.0 or bottom != 1.0:
+                self.scrollbar.grid(row=0, column=1, sticky="ns")
+            else:
+                self.scrollbar.grid_remove()
+        
+        # Bind text changes to scrollbar visibility
+        self.text_display.bind('<Configure>', on_text_change)
+        self.text_display.bind('<KeyRelease>', on_text_change)
+        self.text_display.bind('<<Modified>>', on_text_change)
+        
+        # Update scrollbar command to trigger visibility check
+        original_set = self.scrollbar.set
+        def scrollbar_set(*args):
+            original_set(*args)
+            on_text_change()
+        self.scrollbar.set = scrollbar_set
     
     def _create_footer_section(self, parent: ttk.Frame) -> None:
         """Create the footer section with additional info."""
