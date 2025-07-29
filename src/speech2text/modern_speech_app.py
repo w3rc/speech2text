@@ -9,6 +9,7 @@ import wave
 from datetime import datetime
 from typing import Optional
 
+import pyperclip
 from openai import OpenAI
 from .settings import settings
 from .modern_settings_dialog import ModernSettingsDialog
@@ -375,8 +376,7 @@ class ModernSpeechToTextApp:
             
             # Start the hotkey manager
             if self.hotkey_manager.start():
-                if self.activity_history:
-                    self.activity_history.add_activity("system", "Global hotkey enabled (Ctrl+Win to toggle recording)")
+                pass  # Global hotkey enabled silently
             else:
                 print("Failed to start global hotkey manager")
                 
@@ -525,9 +525,7 @@ class ModernSpeechToTextApp:
             self.recording_thread = threading.Thread(target=self._record_audio, daemon=True)
             self.recording_thread.start()
             
-            # Log activity
-            if self.activity_history:
-                self.activity_history.add_activity("recording_start", "Started recording audio")
+            # Recording started (no activity log needed)
             
         except Exception as e:
             messagebox.showerror("Recording Error", f"Failed to start recording: {str(e)}")
@@ -564,9 +562,7 @@ class ModernSpeechToTextApp:
         processing_thread = threading.Thread(target=self._process_audio, daemon=True)
         processing_thread.start()
         
-        # Log activity
-        if self.activity_history:
-            self.activity_history.add_activity("recording_stop", "Stopped recording, processing audio...")
+        # Recording stopped (no activity log needed)
     
     def _process_audio(self) -> None:
         """Process recorded audio and transcribe."""
@@ -638,9 +634,15 @@ class ModernSpeechToTextApp:
             # Animate the text area to highlight new content
             self.animation_manager.pulse(self.text_display, 0.02, 0.3)
         
+        # Auto-copy transcribed text to clipboard
+        try:
+            pyperclip.copy(text)
+        except Exception as e:
+            print(f"Failed to copy to clipboard: {e}")
+        
         # Log activity
         if self.activity_history:
-            self.activity_history.add_activity("transcription", text)
+            self.activity_history.add_activity(text)
             
         # Slight delay for animation effect
         self.root.after(100, add_text)

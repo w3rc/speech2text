@@ -5,6 +5,7 @@ from tkinter import ttk
 from typing import Dict, Any
 import sys
 import platform
+import pyperclip
 
 
 class DarkTheme:
@@ -523,7 +524,7 @@ class ActivityHistoryPanel(tk.Frame):
         header_frame.pack(fill='x', padx=20, pady=(20, 10))
         
         header_label = tk.Label(header_frame, 
-                               text="Activity History",
+                               text="Transcription History",
                                bg=DarkTheme.COLORS['bg_secondary'],
                                fg=DarkTheme.COLORS['text_primary'],
                                font=DarkTheme.FONTS['heading'])
@@ -581,13 +582,45 @@ class ActivityHistoryPanel(tk.Frame):
                                     relief='flat', bd=1)
             activity_frame.pack(fill='x', pady=(0, 5))
             
+            # Header with timestamp and copy button
+            header_frame = tk.Frame(activity_frame, bg=DarkTheme.COLORS['bg_tertiary'])
+            header_frame.pack(fill='x', padx=10, pady=(5, 0))
+            
             # Timestamp
-            timestamp_label = tk.Label(activity_frame,
+            timestamp_label = tk.Label(header_frame,
                                      text=activity['timestamp'],
                                      bg=DarkTheme.COLORS['bg_tertiary'],
                                      fg=DarkTheme.COLORS['text_muted'],
                                      font=DarkTheme.FONTS['caption'])
-            timestamp_label.pack(anchor='w', padx=10, pady=(5, 0))
+            timestamp_label.pack(side='left')
+            
+            # Copy button
+            def copy_text(text=activity['full_text']):
+                try:
+                    pyperclip.copy(text)
+                    # Visual feedback - briefly change button color
+                    copy_btn.configure(fg=DarkTheme.COLORS['success'])
+                    copy_btn.after(200, lambda: copy_btn.configure(fg=DarkTheme.COLORS['text_muted']))
+                except Exception as e:
+                    print(f"Failed to copy text: {e}")
+            
+            copy_btn = tk.Label(header_frame,
+                              text="📋",
+                              bg=DarkTheme.COLORS['bg_tertiary'],
+                              fg=DarkTheme.COLORS['text_muted'],
+                              font=('Segoe UI', 10),
+                              cursor='hand2')
+            copy_btn.pack(side='right')
+            copy_btn.bind('<Button-1>', lambda e: copy_text())
+            
+            # Hover effects for copy button
+            def on_enter(e):
+                copy_btn.configure(fg=DarkTheme.COLORS['accent_primary'])
+            def on_leave(e):
+                copy_btn.configure(fg=DarkTheme.COLORS['text_muted'])
+            
+            copy_btn.bind('<Enter>', on_enter)
+            copy_btn.bind('<Leave>', on_leave)
             
             # Text preview
             text_label = tk.Label(activity_frame,
