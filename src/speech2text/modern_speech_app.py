@@ -7,12 +7,11 @@ import tempfile
 import os
 import wave
 from datetime import datetime
-from typing import Optional
+from typing import Optional, Callable
 
 import pyperclip
 from openai import OpenAI
 from .settings import settings
-from .modern_settings_dialog import ModernSettingsDialog
 from .theme import DarkTheme, ModernComponents, AudioLevelMeter, StatusIndicator, ActivityHistoryPanel
 from .audio_monitor import AudioLevelMonitor
 from .global_hotkey import GlobalHotkeyManager
@@ -52,10 +51,13 @@ class ModernSpeechToTextApp:
         self._update_api_client()
         
         # UI components
-        self.settings_dialog: Optional[ModernSettingsDialog] = None
         self.audio_level_meter: Optional[AudioLevelMeter] = None
         self.status_indicator: Optional[StatusIndicator] = None
         self.activity_history: Optional[ActivityHistoryPanel] = None
+        self.settings_panel: Optional['EmbeddedSettingsPanel'] = None
+        
+        # UI state
+        self.settings_visible = False
         
         # Setup UI
         self._setup_ui()
@@ -101,11 +103,13 @@ class ModernSpeechToTextApp:
         left_pane.columnconfigure(0, weight=1)
         left_pane.rowconfigure(1, weight=1)  # Text area gets most space
         
-        # Right pane (activity history)
-        right_pane = ttk.Frame(main_container, style='Dark.TFrame')
-        right_pane.grid(row=0, column=1, sticky="nsew")
-        right_pane.columnconfigure(0, weight=1)
-        right_pane.rowconfigure(0, weight=1)
+        # Right pane (activity history / settings) - Fixed width
+        self.right_pane = ttk.Frame(main_container, style='Dark.TFrame')
+        self.right_pane.grid(row=0, column=1, sticky="nsew")
+        self.right_pane.configure(width=450)  # Fixed width for consistency
+        self.right_pane.grid_propagate(False)  # Prevent resizing
+        self.right_pane.columnconfigure(0, weight=1)
+        self.right_pane.rowconfigure(0, weight=1)
         
         # Header section
         self._create_header_section(left_pane)
@@ -116,8 +120,11 @@ class ModernSpeechToTextApp:
         # Footer section
         self._create_footer_section(left_pane)
         
-        # Activity history section
-        self._create_activity_section(right_pane)
+        # Right pane content (activity history by default)
+        self._create_right_pane_content()
+        
+        # Create settings panel (hidden initially)
+        self._create_settings_panel()
         
         # Audio indicator at bottom center
         self._create_bottom_audio_indicator()
@@ -143,17 +150,11 @@ class ModernSpeechToTextApp:
         )
         self.api_status_label.grid(row=0, column=0, padx=(0, 10))
         
-        # Help button  
-        help_btn = ModernComponents.create_modern_button(
-            status_frame, "❓", command=self._show_help_menu, style='Secondary.TButton'
-        )
-        help_btn.grid(row=0, column=1, padx=(0, 5))
-        
         # Settings button
-        settings_btn = ModernComponents.create_modern_button(
-            status_frame, "⚙️", command=self._open_settings, style='Secondary.TButton'
+        self.settings_btn = ModernComponents.create_modern_button(
+            status_frame, "⚙️", command=self._toggle_settings_panel, style='Secondary.TButton'
         )
-        settings_btn.grid(row=0, column=2)
+        self.settings_btn.grid(row=0, column=1)
         
         self._update_api_status()
     
@@ -268,20 +269,25 @@ class ModernSpeechToTextApp:
         )
         self.footer_label.grid(row=0, column=0, sticky="w")
     
-    def _create_activity_section(self, parent: ttk.Frame) -> None:
-        """Create the activity history section."""
+    def _create_right_pane_content(self) -> None:
+        """Create the right pane content (activity history by default)."""
         # Activity history card
-        activity_card = ModernComponents.create_card_frame(parent)
-        activity_card.grid(row=0, column=0, sticky="nsew")
-        activity_card.columnconfigure(0, weight=1)
-        activity_card.rowconfigure(0, weight=1)
+        self.activity_card = ModernComponents.create_card_frame(self.right_pane)
+        self.activity_card.grid(row=0, column=0, sticky="nsew")
+        self.activity_card.columnconfigure(0, weight=1)
+        self.activity_card.rowconfigure(0, weight=1)
         
         # Activity history panel
-        self.activity_history = ActivityHistoryPanel(activity_card, width=300)  
+        self.activity_history = ActivityHistoryPanel(self.activity_card, width=300)  
         self.activity_history.grid(row=0, column=0, sticky="nsew")
         
         # Animate panel slide-in
-        self.root.after(100, lambda: self._animate_panel_slide_in(self.activity_history))
+        self.root.after(100, lambda: self._animate_panel_slide_in(self.activity_history, 'left'))
+    
+    def _create_settings_panel(self) -> None:
+        """Create the embedded settings panel (hidden initially)."""
+        # Settings panel will be created on first access
+        pass
     
     def _setup_audio_monitor(self) -> None:
         """Set up real-time audio monitoring."""
@@ -655,11 +661,110 @@ class ModernSpeechToTextApp:
         finally:
             help_menu.grab_release()
     
-    def _open_settings(self) -> None:
-        """Open settings dialog."""
-        if not self.settings_dialog:
-            self.settings_dialog = ModernSettingsDialog(self.root, self._on_settings_changed)
-        self.settings_dialog.show()
+    def _toggle_settings_panel(self) -> None:
+        """Toggle between activity history and settings panel."""
+        if self.settings_visible:
+            # Hide settings, show activity history
+            self._hide_settings_panel()
+        else:
+            # Hide activity history, show settings
+            self._show_settings_panel()
+    
+    def _show_settings_panel(self) -> None:
+        """Show the settings panel and hide activity history."""
+        # Create settings panel if it doesn't exist
+        if not self.settings_panel:
+            self.settings_panel = EmbeddedSettingsPanel(self.right_pane, self._on_settings_changed)
+        
+        # Hide activity history with slide-out animation
+        self._animate_panel_slide_out(self.activity_card, 'left', callback=self._complete_settings_show)
+        
+        # Update state
+        self.settings_visible = True
+        
+        # Update button appearance
+        self._update_settings_button_state()
+    
+    def _hide_settings_panel(self) -> None:
+        """Hide the settings panel and show activity history."""
+        # Hide settings panel with slide-out animation
+        if self.settings_panel:
+            self._animate_panel_slide_out(self.settings_panel, 'right', callback=self._complete_settings_hide)
+        
+        # Update state
+        self.settings_visible = False
+        
+        # Update button appearance
+        self._update_settings_button_state()
+    
+    def _complete_settings_show(self) -> None:
+        """Complete the settings panel show animation."""
+        # Hide activity history completely
+        self.activity_card.grid_remove()
+        
+        # Show settings panel
+        self.settings_panel.grid(row=0, column=0, sticky="nsew")
+        
+        # Animate slide-in from right
+        self.root.after(10, lambda: self._animate_panel_slide_in(self.settings_panel, 'right'))
+    
+    def _complete_settings_hide(self) -> None:
+        """Complete the settings panel hide animation."""
+        # Hide settings panel completely
+        if self.settings_panel:
+            self.settings_panel.grid_remove()
+        
+        # Show activity history
+        self.activity_card.grid(row=0, column=0, sticky="nsew")
+        
+        # Animate slide-in from left
+        self.root.after(10, lambda: self._animate_panel_slide_in(self.activity_card, 'left'))
+    
+    def _animate_panel_slide_out(self, panel: tk.Widget, direction: str, callback=None) -> None:
+        """Animate panel sliding out."""
+        # Simple fade effect for now - can be enhanced with actual sliding
+        original_alpha = 1.0
+        steps = 10
+        
+        def fade_step(step: int):
+            if step >= steps:
+                if callback:
+                    callback()
+                return
+            
+            alpha = original_alpha * (1.0 - step / steps)
+            # Simple opacity simulation by changing colors gradually
+            self.root.after(20, lambda: fade_step(step + 1))
+        
+        fade_step(0)
+    
+    def _animate_panel_slide_in(self, panel: tk.Widget, direction: str) -> None:
+        """Animate panel sliding in."""
+        # Simple fade-in effect for now - can be enhanced with actual sliding
+        steps = 10
+        
+        def fade_step(step: int):
+            if step >= steps:
+                return
+            
+            alpha = step / steps
+            # Simple opacity simulation 
+            self.root.after(20, lambda: fade_step(step + 1))
+        
+        fade_step(0)
+    
+    def _update_settings_button_state(self) -> None:
+        """Update the settings button appearance based on current state."""
+        if self.settings_visible:
+            # Active state - show as pressed/active
+            self.settings_btn.configure(style='Modern.TButton')
+            # Change icon to indicate "close settings" 
+            self.settings_btn.configure(text="✕")
+        else:
+            # Inactive state - show as normal
+            self.settings_btn.configure(style='Secondary.TButton')
+            # Show settings icon
+            self.settings_btn.configure(text="⚙️")
     
     def _on_settings_changed(self) -> None:
         """Handle settings changes."""
@@ -734,3 +839,416 @@ class ModernSpeechToTextApp:
         settings.save_settings()
         
         self.root.destroy()
+
+
+class EmbeddedSettingsPanel(tk.Frame):
+    """Embedded settings panel that matches the main app's theme and layout."""
+    
+    def __init__(self, parent: tk.Widget, on_settings_changed: Optional[Callable] = None):
+        super().__init__(parent, bg=DarkTheme.COLORS['bg_primary'])
+        self.on_settings_changed = on_settings_changed
+        
+        # Set fixed dimensions to prevent resizing
+        self.configure(width=450, height=600)
+        self.grid_propagate(False)
+        
+        # Configure grid
+        self.columnconfigure(0, weight=1)
+        self.rowconfigure(1, weight=1)  # Content area expands
+        
+        # Current tab
+        self.current_tab = "api"
+        
+        # Create UI
+        self._create_header()
+        self._create_content_area()
+        self._create_action_buttons()
+        
+        # Load settings
+        self._load_current_settings()
+        
+        # Switch to first tab
+        self._switch_tab("api")
+    
+    def _create_header(self) -> None:
+        """Create the settings panel header."""
+        header_frame = tk.Frame(self, bg=DarkTheme.COLORS['bg_primary'])
+        header_frame.grid(row=0, column=0, sticky="ew", padx=20, pady=(20, 15))
+        header_frame.columnconfigure(0, weight=1)
+        
+        # Title (centered)
+        title_label = tk.Label(header_frame,
+                              text="Settings",
+                              bg=DarkTheme.COLORS['bg_primary'],
+                              fg=DarkTheme.COLORS['text_primary'],
+                              font=DarkTheme.FONTS['heading_large'])
+        title_label.grid(row=0, column=0, sticky="w")
+        
+        # Settings icon (inactive state)
+        settings_icon = tk.Label(header_frame,
+                                text="⚙️",
+                                bg=DarkTheme.COLORS['bg_primary'],
+                                fg=DarkTheme.COLORS['text_muted'],
+                                font=DarkTheme.FONTS['heading'])
+        settings_icon.grid(row=0, column=1, sticky="e")
+    
+    def _create_content_area(self) -> None:
+        """Create the main content area with navigation and settings."""
+        content_frame = tk.Frame(self, bg=DarkTheme.COLORS['bg_primary'])
+        content_frame.grid(row=1, column=0, sticky="nsew", padx=20, pady=0)
+        content_frame.columnconfigure(1, weight=1)
+        content_frame.rowconfigure(0, weight=1)
+        
+        # Navigation tabs (vertical list)
+        self._create_navigation(content_frame)
+        
+        # Settings content area
+        self._create_settings_content(content_frame)
+    
+    def _create_navigation(self, parent: tk.Frame) -> None:
+        """Create the navigation tab list."""
+        nav_frame = tk.Frame(parent, bg=DarkTheme.COLORS['bg_secondary'], width=140)
+        nav_frame.grid(row=0, column=0, sticky="nsew", padx=(0, 15))
+        nav_frame.grid_propagate(False)
+        
+        # Tab definitions
+        self.tabs = [
+            ("api", "🔑", "API"),
+            ("audio", "🎤", "Audio"),
+            ("output", "💾", "Files"),
+            ("interface", "🎨", "Theme")
+        ]
+        
+        self.tab_buttons = {}
+        
+        # Create tab buttons
+        for i, (tab_id, icon, title) in enumerate(self.tabs):
+            btn_frame = tk.Frame(nav_frame, bg=DarkTheme.COLORS['bg_secondary'])
+            btn_frame.pack(fill='x', padx=8, pady=2)
+            
+            # Tab button
+            tab_btn = tk.Frame(btn_frame,
+                              bg=DarkTheme.COLORS['bg_secondary'],
+                              relief='flat',
+                              bd=0,
+                              height=40)
+            tab_btn.pack(fill='x', pady=2)
+            
+            # Icon and text
+            content_frame = tk.Frame(tab_btn, bg=DarkTheme.COLORS['bg_secondary'])
+            content_frame.pack(expand=True, fill='both')
+            
+            # Icon
+            icon_label = tk.Label(content_frame,
+                                 text=icon,
+                                 bg=DarkTheme.COLORS['bg_secondary'],
+                                 fg=DarkTheme.COLORS['text_secondary'],
+                                 font=('Segoe UI', 12))
+            icon_label.pack(side='left', padx=(8, 6), pady=8)
+            
+            # Title
+            title_label = tk.Label(content_frame,
+                                  text=title,
+                                  bg=DarkTheme.COLORS['bg_secondary'],
+                                  fg=DarkTheme.COLORS['text_primary'],
+                                  font=DarkTheme.FONTS['body_bold'],
+                                  anchor='w')
+            title_label.pack(side='left', fill='x', expand=True, pady=8)
+            
+            # Store references
+            self.tab_buttons[tab_id] = {
+                'frame': tab_btn,
+                'content': content_frame,
+                'icon': icon_label,
+                'title': title_label
+            }
+            
+            # Bind events
+            for widget in [tab_btn, content_frame, icon_label, title_label]:
+                widget.bind("<Button-1>", lambda e, tid=tab_id: self._switch_tab(tid))
+                widget.bind("<Enter>", lambda e, tid=tab_id: self._on_tab_hover(tid, True))
+                widget.bind("<Leave>", lambda e, tid=tab_id: self._on_tab_hover(tid, False))
+    
+    def _create_settings_content(self, parent: tk.Frame) -> None:
+        """Create the settings content area without scrollbar."""
+        # Content container
+        content_container = tk.Frame(parent, bg=DarkTheme.COLORS['bg_primary'])
+        content_container.grid(row=0, column=1, sticky="nsew")
+        content_container.columnconfigure(0, weight=1)
+        content_container.rowconfigure(0, weight=1)
+        
+        # Create content frames for each tab with fixed width
+        self.content_frames = {}
+        for tab_id, _, _ in self.tabs:
+            frame = tk.Frame(content_container, bg=DarkTheme.COLORS['bg_primary'])
+            frame.configure(width=280)  # Fixed content width
+            self.content_frames[tab_id] = frame
+        
+        # Create content for each tab
+        self._create_all_tab_content()
+    
+    def _create_action_buttons(self) -> None:
+        """Create the action buttons at the bottom."""
+        button_frame = tk.Frame(self, bg=DarkTheme.COLORS['bg_primary'])
+        button_frame.grid(row=2, column=0, sticky="ew", padx=20, pady=(10, 20))
+        
+        # Button container
+        button_container = tk.Frame(button_frame, bg=DarkTheme.COLORS['bg_primary'])
+        button_container.pack(anchor='center')
+        
+        # Apply button
+        apply_btn = tk.Button(button_container,
+                             text="Apply",
+                             bg=DarkTheme.COLORS['bg_hover'],
+                             fg=DarkTheme.COLORS['text_primary'],
+                             activebackground=DarkTheme.COLORS['bg_active'],
+                             activeforeground=DarkTheme.COLORS['text_primary'],
+                             font=DarkTheme.FONTS['body'],
+                             relief='flat',
+                             borderwidth=0,
+                             padx=12,
+                             pady=6,
+                             command=self._apply_settings)
+        apply_btn.pack(side='left', padx=(0, 8))
+        
+        # Reset button
+        reset_btn = tk.Button(button_container,
+                             text="Reset",
+                             bg=DarkTheme.COLORS['bg_tertiary'],
+                             fg=DarkTheme.COLORS['text_primary'],
+                             activebackground=DarkTheme.COLORS['bg_hover'],
+                             activeforeground=DarkTheme.COLORS['text_primary'],
+                             font=DarkTheme.FONTS['body'],
+                             relief='flat',
+                             borderwidth=0,
+                             padx=12,
+                             pady=6,
+                             command=self._reset_settings)
+        reset_btn.pack(side='left')
+    
+    def _switch_tab(self, tab_id: str) -> None:
+        """Switch to the specified tab without flickering."""
+        # Hide all content frames by removing them from grid
+        for frame in self.content_frames.values():
+            frame.grid_remove()
+        
+        # Show selected content frame using grid (no flickering)
+        if tab_id in self.content_frames:
+            self.content_frames[tab_id].grid(row=0, column=0, sticky='nsew', padx=15, pady=15)
+        
+        # Update tab button styles efficiently
+        for tid, elements in self.tab_buttons.items():
+            if tid == tab_id:
+                # Active tab styling - update only if not already active
+                if elements['frame']['bg'] != DarkTheme.COLORS['bg_tertiary']:
+                    elements['frame'].config(bg=DarkTheme.COLORS['bg_tertiary'])
+                    elements['content'].config(bg=DarkTheme.COLORS['bg_tertiary'])
+                    elements['icon'].config(bg=DarkTheme.COLORS['bg_tertiary'], 
+                                          fg=DarkTheme.COLORS['text_primary'])
+                    elements['title'].config(bg=DarkTheme.COLORS['bg_tertiary'],
+                                           fg=DarkTheme.COLORS['text_primary'])
+            else:
+                # Inactive tab styling - update only if not already inactive
+                if elements['frame']['bg'] != DarkTheme.COLORS['bg_secondary']:
+                    elements['frame'].config(bg=DarkTheme.COLORS['bg_secondary'])
+                    elements['content'].config(bg=DarkTheme.COLORS['bg_secondary'])
+                    elements['icon'].config(bg=DarkTheme.COLORS['bg_secondary'],
+                                          fg=DarkTheme.COLORS['text_secondary'])
+                    elements['title'].config(bg=DarkTheme.COLORS['bg_secondary'],
+                                           fg=DarkTheme.COLORS['text_primary'])
+        
+        self.current_tab = tab_id
+    
+    def _on_tab_hover(self, tab_id: str, enter: bool) -> None:
+        """Handle tab hover effects efficiently."""
+        if tab_id == self.current_tab or not hasattr(self, 'current_tab'):
+            return
+        
+        elements = self.tab_buttons[tab_id]
+        target_bg = DarkTheme.COLORS['bg_hover'] if enter else DarkTheme.COLORS['bg_secondary']
+        target_fg = DarkTheme.COLORS['text_primary'] if enter else DarkTheme.COLORS['text_secondary']
+        target_title_fg = DarkTheme.COLORS['text_primary']
+        
+        # Only update if the color actually changed
+        if elements['frame']['bg'] != target_bg:
+            elements['frame'].config(bg=target_bg)
+            elements['content'].config(bg=target_bg)
+            elements['icon'].config(bg=target_bg, fg=target_fg)
+            elements['title'].config(bg=target_bg, fg=target_title_fg)
+    
+    def _create_all_tab_content(self) -> None:
+        """Create content for all tabs."""
+        self._create_api_tab_content()
+        self._create_audio_tab_content()
+        self._create_output_tab_content()
+        self._create_interface_tab_content()
+    
+    def _create_api_tab_content(self) -> None:
+        """Create API settings content."""
+        frame = self.content_frames['api']
+        
+        # API Key section
+        self._create_section(frame, "OpenAI API Key", "Configure your API key for transcription")
+        
+        # API Key input
+        key_frame = tk.Frame(frame, bg=DarkTheme.COLORS['bg_secondary'])
+        key_frame.pack(fill='x', pady=(0, 20))
+        
+        key_label = tk.Label(key_frame,
+                            text="API Key:",
+                            bg=DarkTheme.COLORS['bg_secondary'],
+                            fg=DarkTheme.COLORS['text_primary'],
+                            font=DarkTheme.FONTS['body_bold'])
+        key_label.pack(anchor='w', padx=15, pady=(15, 5))
+        
+        self.api_key_var = tk.StringVar()
+        key_entry = tk.Entry(key_frame,
+                            textvariable=self.api_key_var,
+                            bg=DarkTheme.COLORS['bg_tertiary'],
+                            fg=DarkTheme.COLORS['text_primary'],
+                            insertbackground=DarkTheme.COLORS['text_primary'],
+                            relief='flat',
+                            bd=5,
+                            font=DarkTheme.FONTS['code'],
+                            show="*",
+                            width=40)
+        key_entry.pack(fill='x', padx=15, pady=(0, 15))
+    
+    def _create_audio_tab_content(self) -> None:
+        """Create audio settings content."""
+        frame = self.content_frames['audio']
+        
+        # Audio quality section
+        self._create_section(frame, "Audio Quality", "Configure recording parameters")
+        
+        audio_frame = tk.Frame(frame, bg=DarkTheme.COLORS['bg_secondary'])
+        audio_frame.pack(fill='x', pady=(0, 20))
+        
+        # Sample rate
+        rate_label = tk.Label(audio_frame,
+                             text="Sample Rate:",
+                             bg=DarkTheme.COLORS['bg_secondary'],
+                             fg=DarkTheme.COLORS['text_primary'],
+                             font=DarkTheme.FONTS['body_bold'])
+        rate_label.pack(anchor='w', padx=15, pady=(15, 5))
+        
+        self.sample_rate_var = tk.StringVar()
+        rate_combo = ttk.Combobox(
+            audio_frame,
+            textvariable=self.sample_rate_var,
+            values=["44100 Hz (CD quality)", "22050 Hz", "16000 Hz (Good for speech)"],
+            state='readonly',
+            width=30,
+            style='Modern.TCombobox'
+        )
+        rate_combo.pack(anchor='w', padx=15, pady=(0, 15))
+    
+    def _create_output_tab_content(self) -> None:
+        """Create output settings content."""
+        frame = self.content_frames['output']
+        
+        # File output section
+        self._create_section(frame, "File Output", "Configure automatic saving")
+        
+        output_frame = tk.Frame(frame, bg=DarkTheme.COLORS['bg_secondary'])
+        output_frame.pack(fill='x', pady=(0, 20))
+        
+        # Auto-save checkbox
+        self.auto_save_var = tk.BooleanVar()
+        auto_save_check = tk.Checkbutton(output_frame,
+                                        text="Automatically save transcriptions",
+                                        variable=self.auto_save_var,
+                                        bg=DarkTheme.COLORS['bg_secondary'],
+                                        fg=DarkTheme.COLORS['text_primary'],
+                                        selectcolor=DarkTheme.COLORS['bg_tertiary'],
+                                        activebackground=DarkTheme.COLORS['bg_secondary'],
+                                        activeforeground=DarkTheme.COLORS['text_primary'],
+                                        relief='flat',
+                                        bd=0,
+                                        font=DarkTheme.FONTS['body'])
+        auto_save_check.pack(anchor='w', padx=15, pady=15)
+    
+    def _create_interface_tab_content(self) -> None:
+        """Create interface settings content."""
+        frame = self.content_frames['interface']
+        
+        # Theme section
+        self._create_section(frame, "Appearance", "Customize the interface")
+        
+        theme_frame = tk.Frame(frame, bg=DarkTheme.COLORS['bg_secondary'])
+        theme_frame.pack(fill='x', pady=(0, 20))
+        
+        theme_label = tk.Label(theme_frame,
+                              text="Theme:",
+                              bg=DarkTheme.COLORS['bg_secondary'],
+                              fg=DarkTheme.COLORS['text_primary'],
+                              font=DarkTheme.FONTS['body_bold'])
+        theme_label.pack(anchor='w', padx=15, pady=(15, 5))
+        
+        self.theme_var = tk.StringVar()
+        theme_combo = ttk.Combobox(
+            theme_frame,
+            textvariable=self.theme_var,
+            values=["Dark (Current)", "Light (Coming Soon)"],
+            state='readonly',
+            width=30,
+            style='Modern.TCombobox'
+        )
+        theme_combo.pack(anchor='w', padx=15, pady=(0, 15))
+    
+    def _create_section(self, parent: tk.Frame, title: str, subtitle: str) -> None:
+        """Create a section with title and subtitle."""
+        section_frame = tk.Frame(parent, bg=DarkTheme.COLORS['bg_secondary'])
+        section_frame.pack(fill='x', pady=(0, 15))
+        
+        title_label = tk.Label(section_frame,
+                              text=title,
+                              bg=DarkTheme.COLORS['bg_secondary'],
+                              fg=DarkTheme.COLORS['text_primary'],
+                              font=DarkTheme.FONTS['heading'])
+        title_label.pack(anchor='w', padx=15, pady=(15, 2))
+        
+        subtitle_label = tk.Label(section_frame,
+                                 text=subtitle,
+                                 bg=DarkTheme.COLORS['bg_secondary'],
+                                 fg=DarkTheme.COLORS['text_muted'],
+                                 font=DarkTheme.FONTS['caption'])
+        subtitle_label.pack(anchor='w', padx=15, pady=(0, 15))
+    
+    def _load_current_settings(self) -> None:
+        """Load current settings into the controls."""
+        # Load API key
+        if hasattr(self, 'api_key_var'):
+            self.api_key_var.set(settings.get_api_key() or "")
+        
+        # Load other settings as they're created
+        pass
+    
+    def _apply_settings(self) -> None:
+        """Apply the current settings."""
+        try:
+            # Save API key
+            if hasattr(self, 'api_key_var'):
+                api_key = self.api_key_var.get().strip()
+                if api_key:
+                    settings.set_api_key(api_key)
+            
+            # Save settings
+            settings.save_settings()
+            
+            # Notify parent
+            if self.on_settings_changed:
+                self.on_settings_changed()
+                
+            # Show feedback
+            messagebox.showinfo("Settings Applied", "Settings have been applied successfully!")
+            
+        except Exception as e:
+            messagebox.showerror("Settings Error", f"Failed to apply settings: {str(e)}")
+    
+    def _reset_settings(self) -> None:
+        """Reset settings to defaults."""
+        if messagebox.askyesno("Reset Settings", "Reset all settings to defaults?"):
+            settings.reset_to_defaults()
+            self._load_current_settings()
+            messagebox.showinfo("Settings Reset", "Settings have been reset to defaults.")

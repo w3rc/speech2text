@@ -234,17 +234,29 @@ class DarkTheme:
                  borderwidth=[('selected', 1)],
                  relief=[('selected', 'flat')])
         
-        # Add combobox styles - seamless appearance
+        # Add combobox styles - seamless appearance with proper hover states
         style.configure('Modern.TCombobox',
                        fieldbackground=cls.COLORS['bg_secondary'],
                        background=cls.COLORS['bg_secondary'],
                        foreground=cls.COLORS['text_primary'],
                        borderwidth=0,
                        relief='flat',
-                       font=cls.FONTS['body'])
+                       font=cls.FONTS['body'],
+                       arrowcolor=cls.COLORS['text_primary'],
+                       insertcolor=cls.COLORS['text_primary'])
         
         style.map('Modern.TCombobox',
-                 fieldbackground=[('focus', cls.COLORS['bg_tertiary'])])
+                 fieldbackground=[('focus', cls.COLORS['bg_tertiary']),
+                                ('active', cls.COLORS['bg_hover']),
+                                ('readonly', cls.COLORS['bg_secondary'])],
+                 background=[('focus', cls.COLORS['bg_tertiary']),
+                           ('active', cls.COLORS['bg_hover']),
+                           ('readonly', cls.COLORS['bg_secondary'])],
+                 foreground=[('focus', cls.COLORS['text_primary']),
+                           ('active', cls.COLORS['text_primary']),
+                           ('readonly', cls.COLORS['text_primary'])],
+                 arrowcolor=[('focus', cls.COLORS['text_primary']),
+                           ('active', cls.COLORS['text_primary'])])
         
         # Add checkbutton styles - seamless
         style.configure('Modern.TCheckbutton',
