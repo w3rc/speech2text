@@ -12,6 +12,13 @@ from typing import Optional, Callable
 import pyperclip
 from openai import OpenAI
 from .settings import settings
+
+# Import for dark title bar
+try:
+    import pywinstyles
+    PYWINSTYLES_AVAILABLE = True
+except ImportError:
+    PYWINSTYLES_AVAILABLE = False
 from .theme import DarkTheme, ModernComponents, AudioLevelMeter, StatusIndicator, ActivityHistoryPanel
 from .audio_monitor import AudioLevelMonitor
 from .global_hotkey import GlobalHotkeyManager
@@ -82,8 +89,16 @@ class ModernSpeechToTextApp:
     
     def _setup_ui(self) -> None:
         """Set up the modern user interface."""
-        # Configure window with neon theme
+        # Configure window with dark theme
         self.root.configure(bg=DarkTheme.COLORS['bg_primary'])
+        
+        # Apply dark title bar if available
+        if PYWINSTYLES_AVAILABLE:
+            try:
+                pywinstyles.apply_style(self.root, "dark")
+                print("[THEME] Applied dark title bar")
+            except Exception as e:
+                print(f"[WARNING] Could not apply dark title bar: {e}")
         
         # Configure grid weights
         self.root.columnconfigure(0, weight=1)
