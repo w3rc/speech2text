@@ -78,46 +78,56 @@ class DarkTheme:
     def _configure_ttk_styles(cls, style: ttk.Style) -> None:
         """Configure all ttk widget styles."""
         
-        # Frame styles
+        # Frame styles - seamless, no borders
         style.configure('Dark.TFrame',
                        background=cls.COLORS['bg_primary'],
                        relief='flat',
                        borderwidth=0)
         
         style.configure('Card.TFrame',
-                       background=cls.COLORS['bg_secondary'],
+                       background=cls.COLORS['bg_primary'],
                        relief='flat',
-                       borderwidth=1)
+                       borderwidth=0)
         
-        # Label styles
+        # Label styles - seamless backgrounds
         style.configure('Dark.TLabel',
                        background=cls.COLORS['bg_primary'],
                        foreground=cls.COLORS['text_primary'],
-                       font=cls.FONTS['body'])
+                       font=cls.FONTS['body'],
+                       relief='flat',
+                       borderwidth=0)
         
         style.configure('Heading.TLabel',
                        background=cls.COLORS['bg_primary'],
                        foreground=cls.COLORS['text_primary'],
-                       font=cls.FONTS['heading'])
+                       font=cls.FONTS['heading'],
+                       relief='flat',
+                       borderwidth=0)
         
         style.configure('HeadingLarge.TLabel',
                        background=cls.COLORS['bg_primary'],
                        foreground=cls.COLORS['text_primary'],
-                       font=cls.FONTS['heading_large'])
+                       font=cls.FONTS['heading_large'],
+                       relief='flat',
+                       borderwidth=0)
         
         style.configure('Muted.TLabel',
                        background=cls.COLORS['bg_primary'],
                        foreground=cls.COLORS['text_muted'],
-                       font=cls.FONTS['caption'])
+                       font=cls.FONTS['caption'],
+                       relief='flat',
+                       borderwidth=0)
         
         style.configure('Status.TLabel',
                        background=cls.COLORS['bg_primary'],
                        foreground=cls.COLORS['text_secondary'],
-                       font=cls.FONTS['body_bold'])
+                       font=cls.FONTS['body_bold'],
+                       relief='flat',
+                       borderwidth=0)
         
-        # Button styles (modern black and white)
+        # Button styles - seamless, no borders
         style.configure('Modern.TButton',
-                       background=cls.COLORS['accent_primary'],
+                       background=cls.COLORS['text_muted'],
                        foreground=cls.COLORS['bg_primary'],
                        font=cls.FONTS['body_bold'],
                        borderwidth=0,
@@ -126,26 +136,25 @@ class DarkTheme:
                        padding=(16, 8))
         
         style.map('Modern.TButton',
-                 background=[('active', cls.COLORS['accent_hover']),
-                           ('pressed', cls.COLORS['accent_active'])])
+                 background=[('active', cls.COLORS['text_secondary']),
+                           ('pressed', cls.COLORS['text_primary'])])
         
         style.configure('Secondary.TButton',
-                       background=cls.COLORS['bg_glass'],
+                       background=cls.COLORS['bg_secondary'],
                        foreground=cls.COLORS['text_primary'],
                        font=cls.FONTS['body'],
-                       borderwidth=1,
+                       borderwidth=0,
                        focuscolor='none',
                        relief='flat',
                        padding=(12, 6))
         
         style.map('Secondary.TButton',
-                 background=[('active', cls.COLORS['bg_hover']),
-                           ('pressed', cls.COLORS['bg_active'])],
-                 bordercolor=[('focus', cls.COLORS['border_focus'])])
+                 background=[('active', cls.COLORS['bg_tertiary']),
+                           ('pressed', cls.COLORS['bg_hover'])])
         
-        # Record button (modern styled)
+        # Record button - seamless, subtle styling
         style.configure('Record.TButton',
-                       background=cls.COLORS['success'],
+                       background=cls.COLORS['bg_tertiary'],
                        foreground=cls.COLORS['text_primary'],
                        font=cls.FONTS['body_bold'],
                        borderwidth=0,
@@ -154,11 +163,11 @@ class DarkTheme:
                        padding=(20, 12))
         
         style.map('Record.TButton',
-                 background=[('active', '#1f6feb'),
-                           ('pressed', '#0550ae')])
+                 background=[('active', cls.COLORS['bg_hover']),
+                           ('pressed', cls.COLORS['bg_active'])])
         
         style.configure('Recording.TButton',
-                       background=cls.COLORS['error'],
+                       background=cls.COLORS['bg_hover'],
                        foreground=cls.COLORS['text_primary'],
                        font=cls.FONTS['body_bold'],
                        borderwidth=0,
@@ -167,48 +176,103 @@ class DarkTheme:
                        padding=(20, 12))
         
         style.map('Recording.TButton',
-                 background=[('active', '#f85149'),
-                           ('pressed', '#da3633')])
+                 background=[('active', cls.COLORS['bg_active']),
+                           ('pressed', cls.COLORS['bg_tertiary'])])
         
-        # Scrollbar styles
+        # Scrollbar styles - seamless
         style.configure('Modern.Vertical.TScrollbar',
-                       background=cls.COLORS['bg_secondary'],
+                       background=cls.COLORS['bg_primary'],
                        troughcolor=cls.COLORS['bg_primary'],
                        borderwidth=0,
                        arrowcolor=cls.COLORS['text_muted'],
-                       darkcolor=cls.COLORS['bg_secondary'],
-                       lightcolor=cls.COLORS['bg_secondary'])
+                       darkcolor=cls.COLORS['bg_primary'],
+                       lightcolor=cls.COLORS['bg_primary'],
+                       relief='flat')
         
         style.map('Modern.Vertical.TScrollbar',
-                 background=[('active', cls.COLORS['bg_hover']),
-                           ('pressed', cls.COLORS['bg_active'])])
+                 background=[('active', cls.COLORS['bg_secondary']),
+                           ('pressed', cls.COLORS['bg_tertiary'])])
         
-        # Entry and text widget styles
+        # Entry and text widget styles - seamless
         style.configure('Modern.TEntry',
-                       fieldbackground=cls.COLORS['bg_tertiary'],
-                       background=cls.COLORS['bg_tertiary'],
+                       fieldbackground=cls.COLORS['bg_secondary'],
+                       background=cls.COLORS['bg_secondary'],
                        foreground=cls.COLORS['text_primary'],
-                       borderwidth=1,
-                       insertcolor=cls.COLORS['accent_primary'],
+                       borderwidth=0,
+                       insertcolor=cls.COLORS['text_primary'],
+                       relief='flat',
                        font=cls.FONTS['body'])
         
         style.map('Modern.TEntry',
-                 bordercolor=[('focus', cls.COLORS['border_focus'])])
+                 fieldbackground=[('focus', cls.COLORS['bg_tertiary'])])
         
-        # Notebook styles for settings
+        # Notebook styles for settings - seamless tabs with subtle underline
         style.configure('Modern.TNotebook',
                        background=cls.COLORS['bg_primary'],
-                       borderwidth=0)
+                       borderwidth=0,
+                       relief='flat')
         
         style.configure('Modern.TNotebook.Tab',
-                       background=cls.COLORS['bg_tertiary'],
+                       background=cls.COLORS['bg_primary'],
                        foreground=cls.COLORS['text_secondary'],
-                       padding=(16, 8),
-                       font=cls.FONTS['body'])
+                       padding=(16, 12),
+                       font=cls.FONTS['body'],
+                       borderwidth=0,
+                       relief='flat')
         
         style.map('Modern.TNotebook.Tab',
-                 background=[('selected', cls.COLORS['accent_primary'])],
-                 foreground=[('selected', cls.COLORS['bg_primary'])])
+                 background=[('selected', cls.COLORS['bg_primary'])],
+                 foreground=[('selected', cls.COLORS['text_primary'])])
+        
+        # Add a subtle bottom border for selected tabs
+        style.configure('Modern.TNotebook.Tab',
+                       borderwidth=0,
+                       relief='flat')
+        
+        style.map('Modern.TNotebook.Tab',
+                 bordercolor=[('selected', cls.COLORS['text_muted'])],
+                 borderwidth=[('selected', 1)],
+                 relief=[('selected', 'flat')])
+        
+        # Add combobox styles - seamless appearance
+        style.configure('Modern.TCombobox',
+                       fieldbackground=cls.COLORS['bg_secondary'],
+                       background=cls.COLORS['bg_secondary'],
+                       foreground=cls.COLORS['text_primary'],
+                       borderwidth=0,
+                       relief='flat',
+                       font=cls.FONTS['body'])
+        
+        style.map('Modern.TCombobox',
+                 fieldbackground=[('focus', cls.COLORS['bg_tertiary'])])
+        
+        # Add checkbutton styles - seamless
+        style.configure('Modern.TCheckbutton',
+                       background=cls.COLORS['bg_primary'],
+                       foreground=cls.COLORS['text_primary'],
+                       font=cls.FONTS['body'],
+                       focuscolor='none',
+                       borderwidth=0,
+                       relief='flat')
+        
+        style.map('Modern.TCheckbutton',
+                 background=[('active', cls.COLORS['bg_primary'])])
+        
+        # Add separator styles - seamless
+        style.configure('TSeparator',
+                       background=cls.COLORS['bg_secondary'],
+                       borderwidth=0,
+                       relief='flat')
+        
+        # Add scale styles - seamless
+        style.configure('TScale',
+                       background=cls.COLORS['bg_primary'],
+                       troughcolor=cls.COLORS['bg_secondary'],
+                       borderwidth=0,
+                       relief='flat')
+        
+        style.map('TScale',
+                 background=[('active', cls.COLORS['bg_primary'])])
 
 
 class ModernComponents:
@@ -216,13 +280,12 @@ class ModernComponents:
     
     @staticmethod
     def create_card_frame(parent: tk.Widget, **kwargs) -> tk.Frame:
-        """Create a modern card-style frame."""
+        """Create a seamless card-style frame that blends with background."""
         frame = tk.Frame(parent, 
-                        bg=DarkTheme.COLORS['bg_secondary'],
+                        bg=DarkTheme.COLORS['bg_primary'],
                         relief='flat',
-                        bd=1,
-                        highlightbackground=DarkTheme.COLORS['border'],
-                        highlightthickness=1,
+                        bd=0,
+                        highlightthickness=0,
                         **kwargs)
         return frame
     
@@ -460,24 +523,24 @@ class ActivityHistoryPanel(tk.Frame):
     """Modern activity history panel showing recent transcription activities."""
     
     def __init__(self, parent: tk.Widget, width: int = 300, **kwargs):
-        super().__init__(parent, bg=DarkTheme.COLORS['bg_secondary'], **kwargs)
+        super().__init__(parent, bg=DarkTheme.COLORS['bg_primary'], **kwargs)
         
         self.width = width
         self.configure(width=width)
         
         # Header
-        header_frame = tk.Frame(self, bg=DarkTheme.COLORS['bg_secondary'])
+        header_frame = tk.Frame(self, bg=DarkTheme.COLORS['bg_primary'])
         header_frame.pack(fill='x', padx=20, pady=(20, 10))
         
         header_label = tk.Label(header_frame, 
                                text="Activity History",
-                               bg=DarkTheme.COLORS['bg_secondary'],
+                               bg=DarkTheme.COLORS['bg_primary'],
                                fg=DarkTheme.COLORS['text_primary'],
                                font=DarkTheme.FONTS['heading'])
         header_label.pack(side='left')
         
         # Scrollable content area
-        self.content_frame = tk.Frame(self, bg=DarkTheme.COLORS['bg_secondary'])
+        self.content_frame = tk.Frame(self, bg=DarkTheme.COLORS['bg_primary'])
         self.content_frame.pack(fill='both', expand=True, padx=20, pady=(0, 20))
         
         # Initially empty
@@ -515,33 +578,33 @@ class ActivityHistoryPanel(tk.Frame):
             # Show empty state
             empty_label = tk.Label(self.content_frame,
                                   text="No recent activity",
-                                  bg=DarkTheme.COLORS['bg_secondary'],
+                                  bg=DarkTheme.COLORS['bg_primary'],
                                   fg=DarkTheme.COLORS['text_muted'],
                                   font=DarkTheme.FONTS['caption'])
             empty_label.pack(pady=20)
             return
         
-        # Display activities
+        # Display activities - seamless design
         for i, activity in enumerate(self.activities):
             activity_frame = tk.Frame(self.content_frame, 
-                                    bg=DarkTheme.COLORS['bg_tertiary'],
-                                    relief='flat', bd=1)
-            activity_frame.pack(fill='x', pady=(0, 5))
+                                    bg=DarkTheme.COLORS['bg_secondary'],
+                                    relief='flat', bd=0)
+            activity_frame.pack(fill='x', pady=(0, 8))
             
             # Timestamp
             timestamp_label = tk.Label(activity_frame,
                                      text=activity['timestamp'],
-                                     bg=DarkTheme.COLORS['bg_tertiary'],
+                                     bg=DarkTheme.COLORS['bg_secondary'],
                                      fg=DarkTheme.COLORS['text_muted'],
                                      font=DarkTheme.FONTS['caption'])
-            timestamp_label.pack(anchor='w', padx=10, pady=(5, 0))
+            timestamp_label.pack(anchor='w', padx=12, pady=(8, 0))
             
             # Text preview
             text_label = tk.Label(activity_frame,
                                 text=activity['text'],
-                                bg=DarkTheme.COLORS['bg_tertiary'],
+                                bg=DarkTheme.COLORS['bg_secondary'],
                                 fg=DarkTheme.COLORS['text_secondary'],
                                 font=DarkTheme.FONTS['body'],
                                 wraplength=self.width-40,
                                 justify='left')
-            text_label.pack(anchor='w', padx=10, pady=(0, 5))
+            text_label.pack(anchor='w', padx=12, pady=(0, 8))

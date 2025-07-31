@@ -26,8 +26,8 @@ class ModernSpeechToTextApp:
         """Initialize the modern Speech2Text application."""
         self.root = root
         self.root.title("Speech2Text - Modern")
-        self.root.geometry("900x700")
-        self.root.minsize(700, 500)
+        self.root.geometry("1200x900")
+        self.root.minsize(900, 700)
         
         # Apply dark theme
         DarkTheme.apply_theme(self.root)
@@ -87,9 +87,9 @@ class ModernSpeechToTextApp:
         self.root.columnconfigure(0, weight=1)
         self.root.rowconfigure(0, weight=1)
         
-        # Main container with glassmorphism effect
+        # Main container - seamless integration
         main_container = tk.Frame(self.root, bg=DarkTheme.COLORS['bg_primary'])
-        main_container.grid(row=0, column=0, sticky="nsew", padx=30, pady=30)
+        main_container.grid(row=0, column=0, sticky="nsew", padx=20, pady=20)
         main_container.columnconfigure(0, weight=1)
         main_container.columnconfigure(1, weight=0)  # Fixed width for activity panel
         main_container.rowconfigure(0, weight=1)
@@ -158,64 +158,36 @@ class ModernSpeechToTextApp:
     
     def _create_recording_section(self, parent: ttk.Frame) -> None:
         """Create the recording controls section."""
-        # Recording card
+        # Recording card - more compact layout
         recording_card = ModernComponents.create_card_frame(parent)
-        recording_card.grid(row=1, column=0, sticky="ew", pady=(0, 20))
+        recording_card.grid(row=1, column=0, sticky="ew", pady=(0, 15))
         recording_card.columnconfigure(1, weight=1)
         
-        # Add padding inside card
+        # Add padding inside card - reduced padding
         card_content = ttk.Frame(recording_card, style='Card.TFrame')
-        card_content.grid(row=0, column=0, sticky="ew", padx=20, pady=20)
-        card_content.columnconfigure(1, weight=1)
+        card_content.grid(row=0, column=0, sticky="ew", padx=15, pady=15)
+        card_content.columnconfigure(2, weight=1)
         
-        # Status indicator and label
-        status_frame = ttk.Frame(card_content, style='Card.TFrame')
-        status_frame.grid(row=0, column=0, sticky="w", pady=(0, 15))
-        
-        self.status_indicator = StatusIndicator(status_frame, size=24)
-        self.status_indicator.grid(row=0, column=0, padx=(0, 10))
+        # Status indicator and label - more compact
+        self.status_indicator = StatusIndicator(card_content, size=20)
+        self.status_indicator.grid(row=0, column=0, padx=(0, 8))
         
         self.status_label = ModernComponents.create_modern_label(
-            status_frame, "Ready to record", style='Status.TLabel'
+            card_content, "Ready to record", style='Status.TLabel'
         )
-        self.status_label.grid(row=0, column=1)
+        self.status_label.grid(row=0, column=1, sticky="w")
         
-        # Audio level meter
-        meter_frame = ttk.Frame(card_content, style='Card.TFrame')
-        meter_frame.grid(row=1, column=0, columnspan=2, sticky="ew", pady=(0, 15))
-        meter_frame.columnconfigure(0, weight=1)
-        
+        # Audio level meter - horizontal layout, smaller size
         meter_label = ModernComponents.create_modern_label(
-            meter_frame, "Audio Level:", style='Dark.TLabel'
+            card_content, "Audio:", style='Dark.TLabel'
         )
-        meter_label.grid(row=0, column=0, sticky="w", pady=(0, 5))
+        meter_label.grid(row=0, column=2, sticky="e", padx=(10, 5))
         
-        self.audio_level_meter = AudioLevelMeter(meter_frame, size=200)
-        self.audio_level_meter.grid(row=1, column=0, pady=10)
+        self.audio_level_meter = AudioLevelMeter(card_content, size=120)
+        self.audio_level_meter.grid(row=0, column=3, padx=(0, 10))
         
-        # Recording button
-        button_frame = ttk.Frame(card_content, style='Card.TFrame')
-        button_frame.grid(row=2, column=0, columnspan=2, pady=(15, 0))
-        
-        self.record_button = ModernComponents.create_modern_button(
-            button_frame, "🎤 Start Recording", command=self._animated_toggle_recording,
-            style='Record.TButton'
-        )
-        self.record_button.grid(row=0, column=0, padx=(0, 10))
-        
-        # Clear button
-        clear_btn = ModernComponents.create_modern_button(
-            button_frame, "Clear Text", command=self._animated_clear_text,
-            style='Secondary.TButton'
-        )
-        clear_btn.grid(row=0, column=1, padx=(0, 10))
-        
-        # Save button
-        self.save_btn = ModernComponents.create_modern_button(
-            button_frame, "💾 Save", command=self._animated_save_text,
-            style='Secondary.TButton'
-        )
-        self.save_btn.grid(row=0, column=2)
+        # Remove buttons - functionality available via shortcuts
+        # Ctrl+N for recording, Ctrl+S for save, shortcuts shown in help
     
     def _create_text_section(self, parent: ttk.Frame) -> None:
         """Create the text display section."""
@@ -225,53 +197,54 @@ class ModernSpeechToTextApp:
         text_card.columnconfigure(0, weight=1)
         text_card.rowconfigure(1, weight=1)
         
-        # Card header
+        # Card header - seamless
         header_frame = ttk.Frame(text_card, style='Card.TFrame')
-        header_frame.grid(row=0, column=0, sticky="ew", padx=20, pady=(20, 0))
+        header_frame.grid(row=0, column=0, sticky="ew", padx=0, pady=(15, 10))
         
         header_label = ModernComponents.create_modern_label(
             header_frame, "Transcribed Text", style='Heading.TLabel'
         )
-        header_label.grid(row=0, column=0, sticky="w")
+        header_label.grid(row=0, column=0, sticky="w", padx=20)
         
-        # Text display
+        # Text display - seamless integration
         text_frame = ttk.Frame(text_card, style='Card.TFrame')
-        text_frame.grid(row=1, column=0, sticky="nsew", padx=20, pady=20)
+        text_frame.grid(row=1, column=0, sticky="nsew", padx=0, pady=0)
         text_frame.columnconfigure(0, weight=1)
         text_frame.rowconfigure(0, weight=1)
         
-        # Create text widget without automatic scrollbar
+        # Create text widget - seamless with background
         self.text_display = tk.Text(
             text_frame,
             wrap=tk.WORD,
             font=DarkTheme.FONTS['body'],
-            bg=DarkTheme.COLORS['bg_secondary'],
+            bg=DarkTheme.COLORS['bg_primary'],
             fg=DarkTheme.COLORS['text_primary'],
-            insertbackground=DarkTheme.COLORS['accent_primary'],
-            selectbackground=DarkTheme.COLORS['accent_glow'],
+            insertbackground=DarkTheme.COLORS['text_primary'],
+            selectbackground=DarkTheme.COLORS['bg_tertiary'],
             selectforeground=DarkTheme.COLORS['text_primary'],
             relief='flat',
-            borderwidth=1,
-            highlightbackground=DarkTheme.COLORS['border_glow'],
-            highlightthickness=1
+            borderwidth=0,
+            highlightthickness=0,
+            padx=20,
+            pady=15
         )
         self.text_display.grid(row=0, column=0, sticky="nsew")
         
-        # Create custom dark scrollbar that only shows when needed
+        # Create seamless scrollbar that only shows when needed
         self.scrollbar = tk.Scrollbar(
             text_frame,
             orient="vertical",
             command=self.text_display.yview,
-            bg=DarkTheme.COLORS['bg_secondary'],
+            bg=DarkTheme.COLORS['bg_primary'],
             troughcolor=DarkTheme.COLORS['bg_primary'],
-            activebackground=DarkTheme.COLORS['bg_hover'],
+            activebackground=DarkTheme.COLORS['bg_secondary'],
             highlightbackground=DarkTheme.COLORS['bg_primary'],
             highlightcolor=DarkTheme.COLORS['bg_primary'],
             borderwidth=0,
             highlightthickness=0,
             relief='flat',
             elementborderwidth=0,
-            width=12
+            width=8
         )
         
         # Configure text widget to use scrollbar
@@ -412,7 +385,6 @@ class ModernSpeechToTextApp:
         """Animate application startup with smooth entrance effects."""
         # Animate main components with staggered timing
         components = [
-            (200, self.record_button),
             (400, self.text_display),
             (600, self.audio_level_meter if self.audio_level_meter else None),
         ]
@@ -421,27 +393,7 @@ class ModernSpeechToTextApp:
             if component:
                 self.root.after(delay, lambda c=component: self.animation_manager.fade_in(c, 0.5))
     
-    def _animated_toggle_recording(self) -> None:
-        """Toggle recording with button animation."""
-        self._animate_button_press(self.record_button)
-        self.root.after(50, self.toggle_recording)  # Slight delay for animation
-    
-    def _animated_clear_text(self) -> None:
-        """Clear text with animation."""
-        def do_clear():
-            # Animate text area content clearing
-            self.animation_manager.animate(
-                self.text_display, 'alpha', 1.0, 0.0, 0.2, 'ease_in',
-                lambda w, p, v: None, 
-                lambda: (self.clear_text(), self.animation_manager.fade_in(self.text_display, 0.2))
-            )
-        
-        self.root.after(50, do_clear)
-    
-    def _animated_save_text(self) -> None:
-        """Save text with button animation."""
-        self._animate_button_press(self.save_btn)
-        self.root.after(50, self.save_text)
+    # Button animation methods removed - no buttons to animate
     
     def _update_status(self, status: str) -> None:
         """Update the application status with smooth transitions."""
@@ -517,8 +469,7 @@ class ModernSpeechToTextApp:
             self.recording = True
             self.frames = []
             
-            # Update UI
-            self.record_button.config(text="🛑 Stop Recording", style='Recording.TButton')
+            # Update UI status
             self._update_status("recording")
             
             # Start recording in separate thread
@@ -548,8 +499,7 @@ class ModernSpeechToTextApp:
         self.recording = False
         self.processing = True
         
-        # Update UI
-        self.record_button.config(text="Processing...", style='Secondary.TButton')
+        # Update UI status
         self._update_status("processing")
         
         # Stop recording stream
@@ -649,7 +599,6 @@ class ModernSpeechToTextApp:
     
     def _reset_ui(self, message: str = "Ready to record") -> None:
         """Reset UI to ready state."""
-        self.record_button.config(text="🎤 Start Recording", style='Record.TButton')
         self._update_status("idle")
         self.footer_label.config(text=f"{message} • Modern Speech2Text v0.1.0")
     
@@ -776,15 +725,18 @@ class ModernSpeechToTextApp:
     def _show_shortcuts(self) -> None:
         """Show keyboard shortcuts."""
         shortcuts_text = (
-            "Keyboard Shortcuts:\n\n"
-            "Local Shortcuts:\n"
+            "Keyboard Shortcuts - No Buttons Needed!\n\n"
+            "Recording Controls:\n"
             "Ctrl+N - Start/Stop Recording\n"
+            "Esc - Stop Recording (if active)\n"
+            "Ctrl+Win - Toggle Recording (global)\n\n"
+            "Text Management:\n"
             "Ctrl+S - Save Text\n"
+            "Text is automatically copied to clipboard\n\n"
+            "Application:\n"
             "Ctrl+, - Open Settings\n"
-            "F1 - Show About Dialog\n"
-            "Esc - Stop Recording (if active)\n\n"
-            "Global Shortcuts (work system-wide):\n"
-            "Ctrl+Win - Toggle Recording\n"
+            "F1 - Show About Dialog\n\n"
+            "Pro Tip: All functionality is available via shortcuts!"
         )
         messagebox.showinfo("Keyboard Shortcuts", shortcuts_text, parent=self.root)
     
