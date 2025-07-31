@@ -318,6 +318,7 @@ class AudioLevelMeter(tk.Canvas):
         self.peak_level = 0.0
         self.voice_detected = False
         self.animation_frame = 0
+        self.current_status = 'idle'  # Track current status for color changes
         
         # Modern bar design
         self.center_x = size // 2
@@ -327,11 +328,30 @@ class AudioLevelMeter(tk.Canvas):
         self.bar_spacing = 8
         self.max_bar_height = 60
         
-        # Colors
+        # Base colors
         self.bg_color = DarkTheme.COLORS['bg_primary']
-        self.bar_color = DarkTheme.COLORS['audio_mid']
-        self.active_color = DarkTheme.COLORS['accent_primary']
-        self.voice_color = DarkTheme.COLORS['text_primary']
+        
+        # Status-based colors
+        self.status_colors = {
+            'idle': {
+                'bar_color': '#ffffff',      # White for idle
+                'active_color': '#ffffff',   # White for idle
+                'voice_color': '#ffffff'     # White for idle
+            },
+            'recording': {
+                'bar_color': '#00cc00',      # Green for recording
+                'active_color': '#00ff00',   # Bright green for recording
+                'voice_color': '#00ff00'     # Bright green for recording
+            },
+            'processing': {
+                'bar_color': '#0080ff',      # Blue for processing
+                'active_color': '#0066ff',   # Darker blue for processing
+                'voice_color': '#0099ff'     # Light blue for processing
+            }
+        }
+        
+        # Set initial colors
+        self._update_colors()
         
         # Animation properties
         self.bar_heights = [0] * self.num_bars
@@ -340,6 +360,19 @@ class AudioLevelMeter(tk.Canvas):
         
         self.bind('<Configure>', self._on_resize)
         self._animate()
+    
+    def set_status(self, status: str) -> None:
+        """Set the status and update colors accordingly."""
+        if status in self.status_colors and status != self.current_status:
+            self.current_status = status
+            self._update_colors()
+    
+    def _update_colors(self) -> None:
+        """Update colors based on current status."""
+        colors = self.status_colors.get(self.current_status, self.status_colors['idle'])
+        self.bar_color = colors['bar_color']
+        self.active_color = colors['active_color'] 
+        self.voice_color = colors['voice_color']
         
     def _on_resize(self, event):
         """Handle widget resize."""
@@ -486,7 +519,7 @@ class StatusIndicator(tk.Canvas):
             self.after_cancel(self.animation_id)
         
         if self.status == 'idle':
-            self.itemconfig(self.circle, fill=DarkTheme.COLORS['text_muted'])
+            self.itemconfig(self.circle, fill='#ffffff')  # White for idle
         elif self.status == 'recording':
             self._animate_recording()
         elif self.status == 'processing':
@@ -495,23 +528,23 @@ class StatusIndicator(tk.Canvas):
             self.itemconfig(self.circle, fill=DarkTheme.COLORS['error'])
     
     def _animate_recording(self) -> None:
-        """Animate recording status with pulsing blue."""
+        """Animate recording status with pulsing green."""
         import math
         alpha = (math.sin(self.animation_step * 0.3) + 1) / 2
-        # Simple pulsing effect by alternating colors
+        # Simple pulsing effect by alternating green colors
         if self.animation_step % 20 < 10:
-            color = DarkTheme.COLORS['success']  # Blue
+            color = '#00ff00'  # Bright green
         else:
-            color = '#1f6feb'  # Lighter blue
+            color = '#00cc00'  # Slightly darker green
         
         self.itemconfig(self.circle, fill=color)
         self.animation_step += 1
         self.animation_id = self.after(100, self._animate_recording)
     
     def _animate_processing(self) -> None:
-        """Animate processing status with rotating effect."""
-        # Simple color cycling for processing
-        colors = [DarkTheme.COLORS['info'], '#1f6feb', '#0969da']
+        """Animate processing status with pulsing blue."""
+        # Simple color cycling for processing with blue tones
+        colors = ['#0066ff', '#0080ff', '#0099ff']  # Various blue shades
         color = colors[self.animation_step % len(colors)]
         
         self.itemconfig(self.circle, fill=color)

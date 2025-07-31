@@ -86,10 +86,11 @@ class ModernSpeechToTextApp:
         # Configure grid weights
         self.root.columnconfigure(0, weight=1)
         self.root.rowconfigure(0, weight=1)
+        self.root.rowconfigure(1, weight=0)  # Fixed height for audio indicator
         
         # Main container - seamless integration
         main_container = tk.Frame(self.root, bg=DarkTheme.COLORS['bg_primary'])
-        main_container.grid(row=0, column=0, sticky="nsew", padx=20, pady=20)
+        main_container.grid(row=0, column=0, sticky="nsew", padx=20, pady=(20, 10))
         main_container.columnconfigure(0, weight=1)
         main_container.columnconfigure(1, weight=0)  # Fixed width for activity panel
         main_container.rowconfigure(0, weight=1)
@@ -98,7 +99,7 @@ class ModernSpeechToTextApp:
         left_pane = ttk.Frame(main_container, style='Dark.TFrame')
         left_pane.grid(row=0, column=0, sticky="nsew", padx=(0, 10))
         left_pane.columnconfigure(0, weight=1)
-        left_pane.rowconfigure(2, weight=1)  # Text area gets most space
+        left_pane.rowconfigure(1, weight=1)  # Text area gets most space
         
         # Right pane (activity history)
         right_pane = ttk.Frame(main_container, style='Dark.TFrame')
@@ -109,10 +110,7 @@ class ModernSpeechToTextApp:
         # Header section
         self._create_header_section(left_pane)
         
-        # Recording controls section
-        self._create_recording_section(left_pane)
-        
-        # Text display section
+        # Text display section (now row 1)
         self._create_text_section(left_pane)
         
         # Footer section
@@ -120,6 +118,9 @@ class ModernSpeechToTextApp:
         
         # Activity history section
         self._create_activity_section(right_pane)
+        
+        # Audio indicator at bottom center
+        self._create_bottom_audio_indicator()
     
     def _create_header_section(self, parent: ttk.Frame) -> None:
         """Create the header section with title and status."""
@@ -156,44 +157,26 @@ class ModernSpeechToTextApp:
         
         self._update_api_status()
     
-    def _create_recording_section(self, parent: ttk.Frame) -> None:
-        """Create the recording controls section."""
-        # Recording card - more compact layout
-        recording_card = ModernComponents.create_card_frame(parent)
-        recording_card.grid(row=1, column=0, sticky="ew", pady=(0, 15))
-        recording_card.columnconfigure(1, weight=1)
+    def _create_bottom_audio_indicator(self) -> None:
+        """Create the audio indicator at the bottom center of the window."""
+        # Bottom audio container
+        audio_container = tk.Frame(self.root, bg=DarkTheme.COLORS['bg_primary'])
+        audio_container.grid(row=1, column=0, sticky="ew", pady=(0, 20))
+        audio_container.columnconfigure(0, weight=1)
         
-        # Add padding inside card - reduced padding
-        card_content = ttk.Frame(recording_card, style='Card.TFrame')
-        card_content.grid(row=0, column=0, sticky="ew", padx=15, pady=15)
-        card_content.columnconfigure(2, weight=1)
+        # Center the audio level meter
+        self.audio_level_meter = AudioLevelMeter(audio_container, size=150)
+        self.audio_level_meter.grid(row=0, column=0, pady=10)
         
-        # Status indicator and label - more compact
-        self.status_indicator = StatusIndicator(card_content, size=20)
-        self.status_indicator.grid(row=0, column=0, padx=(0, 8))
-        
-        self.status_label = ModernComponents.create_modern_label(
-            card_content, "Ready to record", style='Status.TLabel'
-        )
-        self.status_label.grid(row=0, column=1, sticky="w")
-        
-        # Audio level meter - horizontal layout, smaller size
-        meter_label = ModernComponents.create_modern_label(
-            card_content, "Audio:", style='Dark.TLabel'
-        )
-        meter_label.grid(row=0, column=2, sticky="e", padx=(10, 5))
-        
-        self.audio_level_meter = AudioLevelMeter(card_content, size=120)
-        self.audio_level_meter.grid(row=0, column=3, padx=(0, 10))
-        
-        # Remove buttons - functionality available via shortcuts
-        # Ctrl+N for recording, Ctrl+S for save, shortcuts shown in help
+        # Status indicator (smaller, positioned above audio meter)
+        self.status_indicator = StatusIndicator(audio_container, size=16)
+        self.status_indicator.grid(row=1, column=0, pady=(5, 0))
     
     def _create_text_section(self, parent: ttk.Frame) -> None:
         """Create the text display section."""
         # Text card
         text_card = ModernComponents.create_card_frame(parent)
-        text_card.grid(row=2, column=0, sticky="nsew")
+        text_card.grid(row=1, column=0, sticky="nsew")
         text_card.columnconfigure(0, weight=1)
         text_card.rowconfigure(1, weight=1)
         
@@ -276,12 +259,12 @@ class ModernSpeechToTextApp:
     def _create_footer_section(self, parent: ttk.Frame) -> None:
         """Create the footer section with additional info."""
         footer_frame = ttk.Frame(parent, style='Dark.TFrame')
-        footer_frame.grid(row=3, column=0, sticky="ew", pady=(20, 0))
+        footer_frame.grid(row=2, column=0, sticky="ew", pady=(20, 0))
         footer_frame.columnconfigure(0, weight=1)
         
         # Stats or additional info can go here
         self.footer_label = ModernComponents.create_modern_label(
-            footer_frame, "Ready • Modern Speech2Text v0.1.0", style='Muted.TLabel'
+            footer_frame, "Modern Speech2Text v0.1.0", style='Muted.TLabel'
         )
         self.footer_label.grid(row=0, column=0, sticky="w")
     
@@ -313,7 +296,7 @@ class ModernSpeechToTextApp:
         
         # Start monitoring
         if self.audio_monitor.start_monitoring():
-            self.footer_label.config(text="Audio monitoring active • Modern Speech2Text v0.1.0")
+            self.footer_label.config(text="Modern Speech2Text v0.1.0")
         else:
             self.footer_label.config(text="Audio monitoring failed • Modern Speech2Text v0.1.0")
     
@@ -361,17 +344,7 @@ class ModernSpeechToTextApp:
         # Schedule on main thread since we're called from hotkey thread
         self.root.after(0, self.toggle_recording)
     
-    def _animate_text_change(self, label: tk.Widget, new_text: str) -> None:
-        """Animate text change with fade effect."""
-        def change_text():
-            label.config(text=new_text)
-            self.animation_manager.fade_in(label, 0.2)
-        
-        # Fade out, change text, then fade in
-        self.animation_manager.animate(
-            label, 'alpha', 1.0, 0.3, 0.1, 'ease_in',
-            lambda w, p, v: None, change_text
-        )
+    # Text change animation removed - no status text to animate
     
     def _animate_button_press(self, button: tk.Widget) -> None:
         """Animate button press with scale effect."""
@@ -396,29 +369,22 @@ class ModernSpeechToTextApp:
     # Button animation methods removed - no buttons to animate
     
     def _update_status(self, status: str) -> None:
-        """Update the application status with smooth transitions."""
-        status_messages = {
-            "idle": "Ready to record",
-            "recording": "Recording... Click Stop when done",
-            "recording_active": "🎙️ Recording - Voice detected!",
-            "processing": "Processing audio...",
-            "error": "Error occurred"
-        }
+        """Update the application status - visual indicator only, no text."""
+        # Map status to visual state
+        visual_status = "idle"
+        if status == "recording" or status == "recording_active":
+            visual_status = "recording"
+        elif status == "processing":
+            visual_status = "processing"
+        elif status == "error":
+            visual_status = "error"
         
-        message = status_messages.get(status, status)
-        
-        # Animate status label change
-        self._animate_text_change(self.status_label, message)
-        
+        # Update both status indicator and audio level meter colors
         if self.status_indicator:
-            if status == "recording" or status == "recording_active":
-                self.status_indicator.set_status("recording")
-            elif status == "processing":
-                self.status_indicator.set_status("processing")
-            elif status == "error":
-                self.status_indicator.set_status("error")
-            else:
-                self.status_indicator.set_status("idle")
+            self.status_indicator.set_status(visual_status)
+        
+        if self.audio_level_meter:
+            self.audio_level_meter.set_status(visual_status)
     
     def _update_api_status(self) -> None:
         """Update the API status display."""
@@ -597,10 +563,10 @@ class ModernSpeechToTextApp:
         # Slight delay for animation effect
         self.root.after(100, add_text)
     
-    def _reset_ui(self, message: str = "Ready to record") -> None:
+    def _reset_ui(self, message: str = "") -> None:
         """Reset UI to ready state."""
         self._update_status("idle")
-        self.footer_label.config(text=f"{message} • Modern Speech2Text v0.1.0")
+        self.footer_label.config(text="Modern Speech2Text v0.1.0")
     
     def _auto_save_transcript(self, text: str) -> None:
         """Auto-save transcript to file."""
