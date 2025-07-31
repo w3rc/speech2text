@@ -2,9 +2,6 @@
 
 import tkinter as tk
 from tkinter import ttk
-from typing import Dict, Any
-import sys
-import platform
 
 
 class DarkTheme:
@@ -76,56 +73,6 @@ class DarkTheme:
         # Configure ttk styles
         cls._configure_ttk_styles(style)
         
-        # Apply after window is fully created
-        root.after(100, lambda: cls._apply_system_dark_mode(root))
-    
-    @classmethod
-    def _apply_system_dark_mode(cls, root: tk.Tk) -> None:
-        """Apply system-level dark mode styling."""
-        if platform.system() == 'Windows':
-            try:
-                import ctypes
-                from ctypes import wintypes
-                
-                hwnd = int(root.winfo_id())
-                
-                # Multiple approaches to force dark mode
-                
-                # Method 1: DWMWA_USE_IMMERSIVE_DARK_MODE (Windows 10 build 18985+)
-                try:
-                    ctypes.windll.dwmapi.DwmSetWindowAttribute(
-                        hwnd, 20, ctypes.byref(ctypes.c_int(1)), ctypes.sizeof(ctypes.c_int)
-                    )
-                except:
-                    pass
-                
-                # Method 2: DWMWA_USE_IMMERSIVE_DARK_MODE_BEFORE_20H1 (older Windows 10)
-                try:
-                    ctypes.windll.dwmapi.DwmSetWindowAttribute(
-                        hwnd, 19, ctypes.byref(ctypes.c_int(1)), ctypes.sizeof(ctypes.c_int)
-                    )
-                except:
-                    pass
-                
-                # Method 3: Set window theme to dark
-                try:
-                    # Set dark theme
-                    ctypes.windll.uxtheme.SetWindowTheme(hwnd, "DarkMode_Explorer", None)
-                except:
-                    pass
-                
-                # Method 4: Registry-based approach
-                try:
-                    import winreg
-                    key = winreg.OpenKey(winreg.HKEY_CURRENT_USER, 
-                                       r"SOFTWARE\Microsoft\Windows\CurrentVersion\Themes\Personalize")
-                    winreg.SetValueEx(key, "AppsUseLightTheme", 0, winreg.REG_DWORD, 0)
-                    winreg.CloseKey(key)
-                except:
-                    pass
-                
-            except Exception:
-                pass  # Silently fail if not supported
     
     @classmethod
     def _configure_ttk_styles(cls, style: ttk.Style) -> None:

@@ -4,6 +4,7 @@ import sys
 import os
 import tkinter as tk
 
+
 # Add current directory to path for PyInstaller
 if getattr(sys, 'frozen', False):
     # Running as PyInstaller executable
@@ -35,6 +36,10 @@ def main() -> None:
     """Main entry point for the modern Speech2Text application."""
     try:
         root = tk.Tk()
+        
+        # Apply dark title bar immediately after root creation
+        _apply_dark_title_bar(root)
+        
         app = ModernSpeechToTextApp(root)
         root.mainloop()
     except KeyboardInterrupt:
@@ -43,6 +48,17 @@ def main() -> None:
     except Exception as e:
         print(f"Fatal error: {e}")
         sys.exit(1)
+
+
+def _apply_dark_title_bar(root: tk.Tk) -> None:
+    """Apply dark title bar using pywinstyles library."""
+    import platform
+    if platform.system() == 'Windows':
+        try:
+            import pywinstyles
+            pywinstyles.apply_style(root, "dark")
+        except Exception:
+            pass  # Silently fail if not available
 
 
 if __name__ == "__main__":
