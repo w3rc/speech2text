@@ -560,6 +560,7 @@ class ActivityHistoryPanel(tk.Frame):
         
         self.width = width
         self.configure(width=width)
+        self.storage_file = self._get_storage_path()
         
         # Header
         header_frame = tk.Frame(self, bg=DarkTheme.COLORS['bg_primary'])
@@ -576,16 +577,78 @@ class ActivityHistoryPanel(tk.Frame):
         self.content_frame = tk.Frame(self, bg=DarkTheme.COLORS['bg_primary'])
         self.content_frame.pack(fill='both', expand=True, padx=20, pady=(0, 20))
         
-        # Initially empty
+        # Load existing activities and initialize
         self.activities = []
+        self._load_activities()
         self._update_display()
+    
+    def _get_storage_path(self) -> str:
+        """Get the path for storing activity history."""
+        import os
+        import tempfile
+        
+        # Use user's data directory or temp directory
+        if os.name == 'nt':  # Windows
+            data_dir = os.path.expandvars(r'%APPDATA%\Speech2Text')
+        else:  # macOS/Linux
+            data_dir = os.path.expanduser('~/.speech2text')
+        
+        # Create directory if it doesn't exist
+        os.makedirs(data_dir, exist_ok=True)
+        
+        return os.path.join(data_dir, 'activity_history.json')
+    
+    def _load_activities(self) -> None:
+        """Load activities from storage."""
+        import json
+        import os
+        
+        try:
+            if os.path.exists(self.storage_file):
+                with open(self.storage_file, 'r', encoding='utf-8') as f:
+                    data = json.load(f)
+                    self.activities = data.get('activities', [])
+                    # Limit to recent activities
+                    if len(self.activities) > 50:
+                        self.activities = self.activities[:50]
+        except Exception as e:
+            print(f"Failed to load activity history: {e}")
+            self.activities = []
+    
+    def _save_activities(self) -> None:
+        """Save activities to storage."""
+        import json
+        
+        try:
+            data = {
+                'activities': self.activities,
+                'last_updated': str(__import__('datetime').datetime.now())
+            }
+            with open(self.storage_file, 'w', encoding='utf-8') as f:
+                json.dump(data, f, ensure_ascii=False, indent=2)
+        except Exception as e:
+            print(f"Failed to save activity history: {e}")
+    
+    def _copy_activity_to_clipboard(self, activity_text: str, button: tk.Button) -> None:
+        """Copy individual activity text to clipboard."""
+        try:
+            import pyperclip
+            pyperclip.copy(activity_text)
+            
+            # Visual feedback - briefly change button color
+            original_bg = button['bg']
+            button.config(bg=DarkTheme.COLORS['bg_hover'])
+            self.after(200, lambda: button.config(bg=original_bg))
+                
+        except Exception as e:
+            print(f"Failed to copy to clipboard: {e}")
     
     def add_activity(self, text: str, timestamp: str = None) -> None:
         """Add a new activity to the history."""
         import datetime
         
         if timestamp is None:
-            timestamp = datetime.datetime.now().strftime("%H:%M:%S")
+            timestamp = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         
         activity = {
             'text': text[:100] + '...' if len(text) > 100 else text,
@@ -595,9 +658,12 @@ class ActivityHistoryPanel(tk.Frame):
         
         self.activities.insert(0, activity)  # Add to beginning
         
-        # Keep only last 10 activities
-        if len(self.activities) > 10:
-            self.activities = self.activities[:10]
+        # Keep only last 50 activities in memory and storage
+        if len(self.activities) > 50:
+            self.activities = self.activities[:50]
+        
+        # Save to storage
+        self._save_activities()
         
         self._update_display()
     
@@ -617,20 +683,44 @@ class ActivityHistoryPanel(tk.Frame):
             empty_label.pack(pady=20)
             return
         
-        # Display activities - seamless design
+        # Display activities - seamless design with copy buttons
         for i, activity in enumerate(self.activities):
             activity_frame = tk.Frame(self.content_frame, 
                                     bg=DarkTheme.COLORS['bg_secondary'],
                                     relief='flat', bd=0)
             activity_frame.pack(fill='x', pady=(0, 8))
             
+            # Header row with timestamp and copy button
+            header_frame = tk.Frame(activity_frame, bg=DarkTheme.COLORS['bg_secondary'])
+            header_frame.pack(fill='x', padx=12, pady=(8, 0))
+            
             # Timestamp
-            timestamp_label = tk.Label(activity_frame,
+            timestamp_label = tk.Label(header_frame,
                                      text=activity['timestamp'],
                                      bg=DarkTheme.COLORS['bg_secondary'],
                                      fg=DarkTheme.COLORS['text_muted'],
                                      font=DarkTheme.FONTS['caption'])
-            timestamp_label.pack(anchor='w', padx=12, pady=(8, 0))
+            timestamp_label.pack(side='left')
+            
+            # Copy button for this activity
+            copy_btn = tk.Button(header_frame,
+                                text="📋",
+                                bg=DarkTheme.COLORS['bg_tertiary'], 
+                                fg=DarkTheme.COLORS['text_muted'],
+                                activebackground=DarkTheme.COLORS['bg_hover'],
+                                activeforeground=DarkTheme.COLORS['text_primary'],
+                                font=('Segoe UI', 10),
+                                relief='flat',
+                                borderwidth=0,
+                                padx=6,
+                                pady=2,
+                                command=lambda text=activity['full_text'], btn=None: 
+                                        self._copy_activity_to_clipboard(text, btn))
+            copy_btn.pack(side='right')
+            
+            # Update the lambda to capture the button reference correctly
+            copy_btn.config(command=lambda text=activity['full_text'], btn=copy_btn: 
+                           self._copy_activity_to_clipboard(text, btn))
             
             # Text preview
             text_label = tk.Label(activity_frame,
@@ -640,4 +730,4 @@ class ActivityHistoryPanel(tk.Frame):
                                 font=DarkTheme.FONTS['body'],
                                 wraplength=self.width-40,
                                 justify='left')
-            text_label.pack(anchor='w', padx=12, pady=(0, 8))
+            text_label.pack(anchor='w', padx=12, pady=(4, 8))
