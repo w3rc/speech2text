@@ -1,7 +1,7 @@
 {
-  "name": "speech2text-electron",
-  "version": "0.2.0",
-  "description": "A modern desktop application for real-time speech-to-text transcription using OpenAI Whisper API",
+  "name": "voiceforge",
+  "version": "1.0.0",
+  "description": "A powerful, modern desktop application for real-time speech-to-text transcription using OpenAI Whisper API. Transform your voice into text with professional accuracy and style.",
   "main": "electron/main.js",
   "homepage": "./",
   "scripts": {
@@ -17,14 +17,17 @@
     "dist-all": "electron-builder -mwl"
   },
   "keywords": [
+    "voiceforge",
     "speech-to-text",
     "transcription",
     "whisper",
     "openai",
     "desktop-app",
-    "electron"
+    "electron",
+    "voice-recognition",
+    "ai-powered"
   ],
-  "author": "Speech2Text Contributors",
+  "author": "VoiceForge Contributors",
   "license": "MIT",
   "devDependencies": {
     "electron": "^28.0.0",
@@ -47,8 +50,8 @@
     "node-fetch": "^3.3.2"
   },
   "build": {
-    "appId": "com.speech2text.app",
-    "productName": "Speech2Text",
+    "appId": "com.voiceforge.app",
+    "productName": "VoiceForge",
     "directories": {
       "output": "dist-electron"
     },

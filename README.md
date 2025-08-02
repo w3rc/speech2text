@@ -1,216 +1,294 @@
-# Speech2Text
+# 🎤 VoiceForge
 
-A modern Windows desktop application for real-time speech-to-text transcription using OpenAI's Whisper API.
+> **Transform your voice into text with professional accuracy and style**
 
-![Python](https://img.shields.io/badge/python-3.13+-blue.svg)
+VoiceForge is a powerful, modern desktop application for real-time speech-to-text transcription using OpenAI's cutting-edge Whisper API. Built with Electron and featuring a sleek macOS Dark-inspired interface, VoiceForge makes voice transcription effortless and professional.
+
+![Electron](https://img.shields.io/badge/electron-28.0+-blue.svg)
 ![License](https://img.shields.io/badge/license-MIT-green.svg)
-![Platform](https://img.shields.io/badge/platform-Windows-lightgrey.svg)
+![Platform](https://img.shields.io/badge/platform-Windows%20%7C%20macOS%20%7C%20Linux-lightgrey.svg)
+![Version](https://img.shields.io/badge/version-1.0.0-brightgreen.svg)
 
-## Features
+## ✨ Features
 
-- **Real-time Speech Recognition**: High-quality transcription using OpenAI Whisper API
-- **User-friendly GUI**: Clean, intuitive interface built with tkinter
-- **Secure Settings**: API key management through encrypted local storage
-- **Audio Recording**: Direct microphone input with customizable parameters
-- **Text Management**: Save, clear, and export transcribed text
-- **Error Handling**: Comprehensive error handling with user-friendly feedback
-- **Cross-session Persistence**: Settings saved between application sessions
+### 🎯 **Core Functionality**
+- **Real-time Speech Recognition** - Powered by OpenAI Whisper API
+- **High-Quality Transcription** - Professional-grade accuracy
+- **Multi-language Support** - Auto-detect or choose from 10+ languages
+- **Voice Activity Detection** - Smart recording start/stop
+- **Live Audio Visualization** - Real-time frequency analysis
 
-## Quick Start
+### 🎨 **Modern Interface**
+- **macOS Dark Theme** - Sleek, professional appearance
+- **Glassmorphism Effects** - Beautiful backdrop blur and transparency
+- **Seamless Design** - No harsh borders or edges
+- **Responsive Layout** - Adapts to different window sizes
+- **Smooth Animations** - Polished micro-interactions
+
+### 🔧 **Advanced Features**
+- **Activity History** - Persistent transcription history with one-click copy
+- **Usage Statistics** - Track your requests, costs, and sessions
+- **Auto-Save** - Automatic saving to various formats (TXT, MD, JSON)
+- **Customizable Settings** - Audio quality, model selection, and more
+- **Global Shortcuts** - Control recording from anywhere
+- **Secure Storage** - Encrypted local storage for API keys
+
+## 🚀 Quick Start
 
 ### Prerequisites
 
-- **Python 3.13+** installed on your system
-- **uv** package manager ([installation guide](https://docs.astral.sh/uv/getting-started/installation/))
-- **OpenAI API key** ([get one here](https://platform.openai.com/api-keys))
-- **Working microphone** for audio input
+- **Node.js** (v16 or higher)
+- **npm** or **yarn**
+- **OpenAI API Key** (get one at [platform.openai.com](https://platform.openai.com))
 
 ### Installation
 
 1. **Clone the repository**
    ```bash
-   git clone https://github.com/yourusername/speech2text.git
-   cd speech2text
+   git clone https://github.com/your-username/voiceforge.git
+   cd voiceforge
    ```
 
 2. **Install dependencies**
    ```bash
-   uv sync
+   npm install
    ```
 
-3. **Run the application**
+3. **Start the development server**
    ```bash
-   python run.py
-   # or using uv
-   uv run python run.py
+   npm run dev
    ```
 
 4. **Configure your API key**
-   - Go to Settings > API Configuration
+   - Open VoiceForge
+   - Click the ⚙️ Settings button
+   - Navigate to "API Settings"
    - Enter your OpenAI API key
-   - Click Save
+   - Click "Test" to verify
 
-## Usage
+## 🎮 How to Use
 
-1. **Start the application** and configure your OpenAI API key in Settings
-2. **Click "Start Recording"** and speak clearly into your microphone
-3. **Click "Stop Recording"** when finished speaking
-4. **View the transcription** in the text area
-5. **Save or clear** the text as needed
+### First Time Setup
 
-### Keyboard Shortcuts
+1. **Launch VoiceForge**
+2. **Configure API Settings:**
+   - Go to Settings → API Settings
+   - Paste your OpenAI API key
+   - Test the connection
+   - Save changes
 
-- `Ctrl+N` - Start new recording
-- `Ctrl+S` - Save text to file
-- `Ctrl+,` - Open Settings
-- `F1` - Show Help/About
+3. **Adjust Audio Settings (Optional):**
+   - Go to Settings → Audio
+   - Choose sample rate (44100 Hz recommended)
+   - Enable noise suppression and echo cancellation if needed
 
-## Configuration
+4. **Set Output Preferences (Optional):**
+   - Go to Settings → Auto-Save
+   - Choose save directory and file format
+   - Enable automatic saving if desired
 
-The application stores settings in a local configuration file:
-- **Windows**: `%APPDATA%\Speech2Text\config.json`
+### Recording and Transcription
 
-### Configurable Options
+#### Method 1: Click to Record
+1. Click the **audio visualizer circle** at the bottom
+2. Speak clearly into your microphone
+3. Click again to stop recording
+4. Your transcription will appear in the main text area
 
-- **API Key**: Your OpenAI API key (encrypted storage)
-- **Audio Quality**: Sample rate and channels
-- **Output Format**: Text formatting preferences
-- **Recording Settings**: Buffer size and audio parameters
+#### Method 2: Global Shortcuts
+- **Ctrl + Super + Space** (Windows/Linux) - Toggle recording
+- **Cmd + Ctrl + Space** (macOS) - Toggle recording
+- **Escape** - Stop recording immediately
 
-## Development
+#### Method 3: Menu Controls
+- Use the **Recording** menu for start/stop options
+- Access via the application menu bar
+
+### Managing Transcriptions
+
+#### Viewing Results
+- Transcribed text appears in the main text area
+- Scroll through longer transcriptions
+- Text is automatically selected for easy copying
+
+#### Activity History
+- View all past transcriptions in the right panel
+- Click any history item to copy the full text
+- Use the "Clear" button to reset history
+
+#### Saving Transcriptions
+- **Manual Save:** Ctrl + S or File → Save Text
+- **Auto-Save:** Enable in Settings → Auto-Save
+- **Copy to Clipboard:** Click history items
+
+## ⚙️ Settings Reference
+
+### 🔑 API Settings
+- **API Key:** Your OpenAI API key (stored securely)
+- **Model:** Whisper v1 (currently available)
+- **Language:** Auto-detect or specific language
+- **Temperature:** Creativity level (0 = precise, 1 = creative)
+- **Custom Prompt:** Context to improve accuracy
+
+### 🎤 Audio Settings
+- **Sample Rate:** 
+  - 44100 Hz - CD Quality (Recommended)
+  - 22050 Hz - Standard Quality
+  - 16000 Hz - Speech Optimized
+- **Buffer Size:** Processing chunk size
+- **Noise Suppression:** Reduce background noise
+- **Echo Cancellation:** Remove room acoustics
+
+### 💾 File Management
+- **Auto-Save:** Automatically save each transcription
+- **Save Directory:** Choose where files are saved
+- **File Format:** TXT, Markdown, or JSON
+- **Filename Template:** Use variables like {{timestamp}}
+
+### 🎨 Appearance
+- **Theme:** Dark theme (Light theme coming soon)
+- **Window Size:** Default application dimensions
+- **Accessibility:** Reduce animations, high contrast
+
+## ⌨️ Keyboard Shortcuts
+
+### Global (Work Anywhere)
+| Shortcut | Action |
+|----------|--------|
+| `Ctrl + Super + Space` | Toggle Recording |
+| `Cmd + Ctrl + Space` | Toggle Recording (macOS) |
+
+### Application
+| Shortcut | Action |
+|----------|--------|
+| `Ctrl + N` | Start/Stop Recording |
+| `Escape` | Stop Recording |
+| `Ctrl + S` | Save Text |
+| `Ctrl + ,` | Open Settings |
+| `F1` | Show About Dialog |
+
+## 📊 Usage Statistics
+
+VoiceForge tracks your usage to help you monitor:
+
+- **Requests Today:** Number of transcriptions
+- **Estimated Cost:** Approximate API costs
+- **Total Sessions:** Lifetime transcription count
+
+*All statistics are stored locally and never shared.*
+
+## 🛠️ Development
 
 ### Project Structure
-
 ```
-speech2text/
-├── src/speech2text/        # Main package
-│   ├── __init__.py         # Package initialization
-│   ├── main.py             # Entry point
-│   ├── speech_to_text_app.py  # Main application
-│   ├── settings.py         # Configuration management
-│   └── settings_dialog.py  # Settings UI
-├── docs/                   # Documentation
-│   ├── CONTRIBUTING.md     # Contribution guidelines
-│   ├── CHANGELOG.md        # Version history
-│   └── setup_instructions.txt  # Legacy setup guide
-├── tests/                  # Test files
-│   ├── test_settings.py    # Settings tests
-│   └── README.md           # Testing guide
-├── assets/                 # Assets (icons, etc.)
-├── run.py                  # Simple launcher script
-├── pyproject.toml         # Project configuration
-├── README.md              # This file
-└── LICENSE                # MIT license
+voiceforge/
+├── electron/           # Main process files
+│   ├── main.js        # Electron main process
+│   └── preload.js     # Preload script
+├── renderer/          # Renderer process files
+│   ├── index.html     # Main HTML
+│   ├── src/
+│   │   ├── js/        # JavaScript modules
+│   │   └── styles/    # CSS stylesheets
+├── assets/            # Static assets
+├── build-electron.bat # Build script
+└── package.json       # Project configuration
 ```
 
-### Setting up Development Environment
+### Available Scripts
 
-1. **Fork and clone** the repository
-2. **Install development dependencies**
-   ```bash
-   uv sync --dev
-   ```
-3. **Run tests**
-   ```bash
-   uv run pytest
-   ```
-4. **Run the application in development mode**
-   ```bash
-   python run.py
-   # or using uv
-   uv run python run.py
-   ```
+```bash
+# Development
+npm run dev              # Start development server
+npm run electron-dev     # Start Electron in dev mode
 
-### Code Style
+# Building
+npm run build           # Build for production
+npm run build-renderer  # Build renderer only
+npm run build-main      # Build main process only
 
-This project follows:
-- **PEP 8** for Python code style
-- **Type hints** for better code documentation
-- **Docstrings** for all public functions and classes
+# Distribution
+npm run pack           # Package without installer
+npm run dist           # Create installer
+npm run dist-all       # Build for all platforms
+```
 
-## Contributing
+### Technologies Used
 
-We welcome contributions! Please see [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
+- **Electron** - Cross-platform desktop framework
+- **OpenAI Whisper API** - Speech recognition
+- **Web Audio API** - Audio processing and visualization
+- **CSS Custom Properties** - Design system
+- **LocalStorage** - Data persistence
+- **IPC** - Inter-process communication
 
-### Ways to Contribute
+## 🔐 Privacy & Security
 
-- Report bugs by opening an issue
-- Suggest features via feature requests
-- Submit pull requests for bug fixes or improvements
-- Improve documentation and examples
-- Add translations for internationalization
+- **Local Storage:** All data stays on your device
+- **Encrypted Keys:** API keys are encrypted locally
+- **No Telemetry:** No usage data is sent to external servers
+- **Open Source:** Fully auditable codebase
 
-## Requirements
+## 🤝 Contributing
 
-### System Requirements
+We welcome contributions! Please see our [Contributing Guide](CONTRIBUTING.md) for details.
 
-- **Operating System**: Windows 10/11 (primary), macOS/Linux (experimental)
-- **Python**: 3.13 or higher
-- **Memory**: 256MB RAM minimum
-- **Storage**: 50MB free space
-- **Network**: Internet connection for API calls
+### Development Setup
 
-### Python Dependencies
+1. Fork the repository
+2. Create a feature branch
+3. Make your changes
+4. Add tests if applicable
+5. Submit a pull request
 
-- `openai` - OpenAI API client
-- `pyaudio` - Audio recording and playback
-- `cryptography` - Secure settings storage
-- `tkinter` - GUI framework (included with Python)
+## 📝 License
 
-## Privacy & Security
+VoiceForge is open source software licensed under the [MIT License](LICENSE).
 
-- **API Key Security**: Keys are encrypted and stored locally
-- **Audio Privacy**: Audio is processed by OpenAI's API (see their privacy policy)
-- **Local Storage**: No audio files are permanently stored on your device
-- **Network**: Only API calls to OpenAI servers, no other external connections
-
-## API Usage & Costs
-
-This application uses OpenAI's Whisper API:
-- **Pricing**: $0.006 per minute of audio
-- **Rate Limits**: Varies by account type
-- **Supported Formats**: WAV, MP3, M4A, and more
-- **Maximum File Size**: 25MB per request
-
-## Troubleshooting
+## 🆘 Support
 
 ### Common Issues
 
-**"No API key configured"**
-- Go to Settings and enter your OpenAI API key
-- Ensure the key starts with `sk-`
-- Check your internet connection
+**Q: My API key isn't working**
+- Verify you have credits in your OpenAI account
+- Check the API key is correctly copied (no extra spaces)
+- Ensure you have access to the Whisper API
 
-**"Audio device error"**
-- Check microphone permissions in Windows settings
-- Ensure no other application is using the microphone
-- Try running as administrator if needed
+**Q: Audio isn't being detected**
+- Check microphone permissions in your system settings
+- Try a different sample rate in Audio Settings
+- Ensure your microphone is the default recording device
 
-**"PyAudio installation failed"**
-```bash
-# On Windows, try:
-uv add --dev pipwin
-uv run pipwin install pyaudio
-```
+**Q: Global shortcuts don't work**
+- Try the alternative shortcut (Ctrl + Alt + Space)
+- Check if another application is using the same shortcut
+- Restart the application
 
-For more issues, check our [Issues page](https://github.com/yourusername/speech2text/issues).
+**Q: Poor transcription quality**
+- Use a higher sample rate (44100 Hz)
+- Enable noise suppression
+- Speak closer to the microphone
+- Add context via custom prompts
 
-## License
+### Getting Help
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+- 📖 Check this README for detailed instructions
+- 🐛 [Report bugs](https://github.com/your-username/voiceforge/issues)
+- 💡 [Request features](https://github.com/your-username/voiceforge/issues)
+- 💬 [Join discussions](https://github.com/your-username/voiceforge/discussions)
 
-## Acknowledgments
+## 🏆 Acknowledgments
 
-- **OpenAI** for providing the Whisper API
-- **Python community** for excellent libraries
-- **Contributors** who help improve this project
-
-## Support
-
-- Email: support@yourproject.com
-- Discussions: [GitHub Discussions](https://github.com/yourusername/speech2text/discussions)
-- Bug Reports: [GitHub Issues](https://github.com/yourusername/speech2text/issues)
+- **OpenAI** for the incredible Whisper API
+- **Electron** team for the cross-platform framework
+- **Contributors** who help improve VoiceForge
 
 ---
 
-**Made with care for the open source community**
+<div align="center">
+
+**Made with ❤️ by the VoiceForge team**
+
+*Transform your voice into text with professional accuracy and style*
+
+</div>
