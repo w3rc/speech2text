@@ -12,6 +12,9 @@ wheels/
 # Virtual environments
 .venv
 
+assets/
+node_modules/
+
 # Audio files
 *.wav
 *.mp3

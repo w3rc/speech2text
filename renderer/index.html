@@ -1,0 +1,545 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VoiceForge - Modern Speech Recognition</title>
+    <link rel="stylesheet" href="src/styles/main.css">
+</head>
+<body class="dark-theme">
+    <div id="app">
+        <!-- Main Container -->
+        <div class="main-container">
+            <!-- Left Pane -->
+            <div class="left-pane">
+                <!-- Header Section -->
+                <div class="header-section">
+                    <h1 class="app-title">VoiceForge</h1>
+                    <div class="header-controls">
+                        <div class="api-status" id="api-status">
+                            <span class="status-text">⚠ No API key - Click Settings</span>
+                        </div>
+                        <button class="settings-btn secondary-btn" id="settings-btn">⚙️</button>
+                    </div>
+                </div>
+
+                <!-- Text Display Section -->
+                <div class="text-card">
+                    <div class="card-header">
+                        <h2>Transcribed Text</h2>
+                    </div>
+                    <div class="text-display-container">
+                        <textarea id="text-display" class="text-display" readonly placeholder="Your transcribed text will appear here..."></textarea>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Pane -->
+            <div class="right-pane" id="right-pane">
+                <!-- Activity History Panel -->
+                <div class="activity-card" id="activity-card">
+                    <div class="activity-header">
+                        <h3>Activity History</h3>
+                        <button class="clear-history-btn" id="clear-history-btn">Clear</button>
+                    </div>
+                    <div class="activity-list" id="activity-list">
+                        <!-- Activity items will be added here -->
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- Bottom Audio Indicator -->
+        <div class="audio-container">
+            <div class="audio-level-meter" id="audio-level-meter">
+                <div class="audio-circle">
+                    <div class="audio-level-fill" id="audio-level-fill"></div>
+                    <div class="audio-visualizer" id="audio-visualizer">
+                        <div class="visualizer-bar" data-frequency="60"></div>
+                        <div class="visualizer-bar" data-frequency="170"></div>
+                        <div class="visualizer-bar" data-frequency="310"></div>
+                        <div class="visualizer-bar" data-frequency="600"></div>
+                        <div class="visualizer-bar" data-frequency="1000"></div>
+                        <div class="visualizer-bar" data-frequency="3000"></div>
+                        <div class="visualizer-bar" data-frequency="6000"></div>
+                    </div>
+                </div>
+            </div>
+            <div class="status-indicator" id="status-indicator">
+                <div class="status-dot" id="status-dot"></div>
+            </div>
+        </div>
+
+        <!-- Discord-Style Settings Overlay -->
+        <div class="settings-overlay" id="settings-modal" style="display: none;">
+            <!-- Left Sidebar Navigation -->
+            <div class="settings-sidebar">
+                <div class="settings-sidebar-header">
+                    <h2>Settings</h2>
+                    <div class="api-status-indicator" id="api-status-badge">
+                        <div class="status-dot" id="settings-status-dot"></div>
+                        <span id="settings-status-text">API Status</span>
+                    </div>
+                </div>
+                
+                <div class="settings-nav-sections">
+                    <div class="nav-section">
+                        <div class="nav-section-title">CONFIGURATION</div>
+                        <button class="nav-item active" data-tab="api">
+                            <span class="nav-icon">🔑</span>
+                            <span class="nav-label">API Settings</span>
+                        </button>
+                        <button class="nav-item" data-tab="audio">
+                            <span class="nav-icon">🎤</span>
+                            <span class="nav-label">Audio</span>
+                        </button>
+                        <button class="nav-item" data-tab="transcription">
+                            <span class="nav-icon">🧠</span>
+                            <span class="nav-label">AI & Language</span>
+                        </button>
+                    </div>
+                    
+                    <div class="nav-section">
+                        <div class="nav-section-title">FILE MANAGEMENT</div>
+                        <button class="nav-item" data-tab="output">
+                            <span class="nav-icon">💾</span>
+                            <span class="nav-label">Auto-Save</span>
+                        </button>
+                    </div>
+                    
+                    <div class="nav-section">
+                        <div class="nav-section-title">APPEARANCE</div>
+                        <button class="nav-item" data-tab="interface">
+                            <span class="nav-icon">🎨</span>
+                            <span class="nav-label">Theme</span>
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="settings-sidebar-footer">
+                    <div class="app-info">
+                        <div class="app-name">VoiceForge</div>
+                        <div class="app-version">v1.0.0</div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Main Content Area -->
+            <div class="settings-main">
+                <div class="settings-header">
+                    <div class="settings-breadcrumb">
+                        <span class="breadcrumb-section">Settings</span>
+                        <span class="breadcrumb-separator">›</span>
+                        <span class="breadcrumb-current" id="current-section">API Settings</span>
+                    </div>
+                    <button class="close-settings-btn" id="close-settings-modal">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <line x1="18" y1="6" x2="6" y2="18"></line>
+                            <line x1="6" y1="6" x2="18" y2="18"></line>
+                        </svg>
+                    </button>
+                </div>
+                
+                <div class="settings-content">
+                    <!-- API Tab -->
+                    <div class="settings-tab active" id="api-tab">
+                        <div class="tab-header">
+                            <h3>API Configuration</h3>
+                            <p>Connect to OpenAI's services for speech transcription</p>
+                        </div>
+                        
+                        <div class="settings-group">
+                            <div class="group-header">
+                                <h4>OpenAI API Key</h4>
+                                <div class="status-badge" id="api-key-status">
+                                    <div class="status-indicator offline" id="api-key-indicator"></div>
+                                    <span id="api-key-status-text">Not configured</span>
+                                </div>
+                            </div>
+                            <div class="setting-item">
+                                <label class="setting-label">API Key</label>
+                                <div class="input-row">
+                                    <input type="password" id="api-key-input" class="setting-input" placeholder="sk-proj-...">
+                                    <button class="icon-btn" id="toggle-api-key-visibility" type="button">
+                                        <svg class="eye-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                                            <circle cx="12" cy="12" r="3"></circle>
+                                        </svg>
+                                    </button>
+                                    <button class="test-btn" id="test-api-key" type="button">Test</button>
+                                </div>
+                                <div class="setting-note">Your API key is stored securely and encrypted locally</div>
+                                <div class="setting-help">
+                                    <a href="#" class="help-link" id="api-help-link">How to get an API key →</a>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="settings-group">
+                            <div class="group-header">
+                                <h4>Usage Statistics</h4>
+                            </div>
+                            <div class="stats-grid">
+                                <div class="stat-card">
+                                    <div class="stat-value" id="session-usage">0</div>
+                                    <div class="stat-label">Requests Today</div>
+                                </div>
+                                <div class="stat-card">
+                                    <div class="stat-value" id="estimated-cost">$0.00</div>
+                                    <div class="stat-label">Estimated Cost</div>
+                                </div>
+                                <div class="stat-card">
+                                    <div class="stat-value" id="total-sessions">0</div>
+                                    <div class="stat-label">Total Sessions</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Audio Tab -->
+                    <div class="settings-tab" id="audio-tab">
+                        <div class="tab-header">
+                            <h3>Audio Settings</h3>
+                            <p>Configure recording quality and audio processing</p>
+                        </div>
+                        
+                        <div class="settings-group">
+                            <div class="group-header">
+                                <h4>Recording Quality</h4>
+                            </div>
+                            <div class="setting-item">
+                                <label class="setting-label" for="sample-rate-select">Sample Rate</label>
+                                <select id="sample-rate-select" class="setting-select">
+                                    <option value="44100">44100 Hz - CD Quality (Recommended)</option>
+                                    <option value="22050">22050 Hz - Standard Quality</option>
+                                    <option value="16000">16000 Hz - Speech Optimized</option>
+                                </select>
+                                <div class="setting-note">Higher sample rates provide better quality but larger files</div>
+                            </div>
+                            
+                            <div class="setting-item">
+                                <label class="setting-label" for="chunk-size-select">Buffer Size</label>
+                                <select id="chunk-size-select" class="setting-select">
+                                    <option value="1024">1024 - Low Latency</option>
+                                    <option value="2048">2048 - Balanced (Recommended)</option>
+                                    <option value="4096">4096 - High Quality</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="settings-group">
+                            <div class="group-header">
+                                <h4>Audio Processing</h4>
+                            </div>
+                            <div class="setting-item">
+                                <div class="setting-row">
+                                    <div class="setting-info">
+                                        <label class="setting-label">Noise Suppression</label>
+                                        <div class="setting-note">Reduce background noise during recording</div>
+                                    </div>
+                                    <label class="toggle-switch">
+                                        <input type="checkbox" id="noise-suppression-checkbox">
+                                        <span class="toggle-slider"></span>
+                                    </label>
+                                </div>
+                            </div>
+                            
+                            <div class="setting-item">
+                                <div class="setting-row">
+                                    <div class="setting-info">
+                                        <label class="setting-label">Echo Cancellation</label>
+                                        <div class="setting-note">Remove echo from speakers or room acoustics</div>
+                                    </div>
+                                    <label class="toggle-switch">
+                                        <input type="checkbox" id="echo-cancellation-checkbox">
+                                        <span class="toggle-slider"></span>
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Transcription Tab -->
+                    <div class="settings-tab" id="transcription-tab">
+                        <div class="tab-header">
+                            <h3>AI & Language Settings</h3>
+                            <p>Configure transcription model and language processing</p>
+                        </div>
+                        
+                        <div class="settings-group">
+                            <div class="group-header">
+                                <h4>Whisper Model</h4>
+                            </div>
+                            <div class="setting-item">
+                                <label class="setting-label" for="model-select">Model</label>
+                                <select id="model-select" class="setting-select">
+                                    <option value="whisper-1">Whisper v1 (Latest)</option>
+                                </select>
+                                <div class="setting-note">OpenAI's speech recognition model</div>
+                            </div>
+                            
+                            <div class="setting-item">
+                                <label class="setting-label" for="language-select">Language</label>
+                                <select id="language-select" class="setting-select">
+                                    <option value="">Auto-detect (Recommended)</option>
+                                    <option value="en">English</option>
+                                    <option value="es">Spanish</option>
+                                    <option value="fr">French</option>
+                                    <option value="de">German</option>
+                                    <option value="it">Italian</option>
+                                    <option value="pt">Portuguese</option>
+                                    <option value="ru">Russian</option>
+                                    <option value="ja">Japanese</option>
+                                    <option value="ko">Korean</option>
+                                    <option value="zh">Chinese</option>
+                                </select>
+                            </div>
+                            
+                            <div class="setting-item">
+                                <label class="setting-label">Creativity Level</label>
+                                <div class="slider-container">
+                                    <input type="range" id="temperature-slider" class="setting-slider" min="0" max="1" step="0.1" value="0">
+                                    <div class="slider-labels">
+                                        <span>Precise</span>
+                                        <span>Creative</span>
+                                    </div>
+                                </div>
+                                <div class="setting-note">Lower values are more accurate, higher values more creative</div>
+                            </div>
+                        </div>
+
+                        <div class="settings-group">
+                            <div class="group-header">
+                                <h4>Context & Prompts</h4>
+                            </div>
+                            <div class="setting-item">
+                                <label class="setting-label" for="prompt-input">Custom Prompt</label>
+                                <textarea id="prompt-input" class="setting-textarea" rows="3" placeholder="Optional: Add context to improve transcription accuracy..."></textarea>
+                                <div class="setting-note">Help the AI understand context, names, or technical terms</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Output Tab -->
+                    <div class="settings-tab" id="output-tab">
+                        <div class="tab-header">
+                            <h3>File Management</h3>
+                            <p>Configure automatic saving and file export options</p>
+                        </div>
+                        
+                        <div class="settings-group">
+                            <div class="group-header">
+                                <h4>Auto-Save Settings</h4>
+                            </div>
+                            <div class="setting-item">
+                                <div class="setting-row">
+                                    <div class="setting-info">
+                                        <label class="setting-label">Automatically save transcriptions</label>
+                                        <div class="setting-note">Save each transcription to a file automatically</div>
+                                    </div>
+                                    <label class="toggle-switch">
+                                        <input type="checkbox" id="auto-save-checkbox">
+                                        <span class="toggle-slider"></span>
+                                    </label>
+                                </div>
+                            </div>
+                            
+                            <div class="setting-item">
+                                <label class="setting-label" for="save-directory-input">Save Directory</label>
+                                <div class="input-row">
+                                    <input type="text" id="save-directory-input" class="setting-input" readonly placeholder="Choose directory...">
+                                    <button class="browse-btn" id="browse-directory-btn" type="button">Browse</button>
+                                </div>
+                            </div>
+                            
+                            <div class="setting-item">
+                                <label class="setting-label" for="file-format-select">File Format</label>
+                                <select id="file-format-select" class="setting-select">
+                                    <option value="txt">Plain Text (.txt)</option>
+                                    <option value="md">Markdown (.md)</option>
+                                    <option value="json">JSON (.json)</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="settings-group">
+                            <div class="group-header">
+                                <h4>File Naming</h4>
+                            </div>
+                            <div class="setting-item">
+                                <label class="setting-label" for="filename-template-input">Filename Template</label>
+                                <input type="text" id="filename-template-input" class="setting-input" value="transcript_{{timestamp}}" placeholder="transcript_{{timestamp}}">
+                                <div class="setting-note">Use {{timestamp}}, {{date}}, {{time}} for dynamic names</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Interface Tab -->
+                    <div class="settings-tab" id="interface-tab">
+                        <div class="tab-header">
+                            <h3>Appearance & Interface</h3>
+                            <p>Customize the look and feel of the application</p>
+                        </div>
+                        
+                        <div class="settings-group">
+                            <div class="group-header">
+                                <h4>Theme Settings</h4>
+                            </div>
+                            <div class="setting-item">
+                                <label class="setting-label" for="theme-select">Color Theme</label>
+                                <select id="theme-select" class="setting-select">
+                                    <option value="dark">Dark Theme (Current)</option>
+                                    <option value="light" disabled>Light Theme (Coming Soon)</option>
+                                    <option value="auto" disabled>Auto (System)</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="settings-group">
+                            <div class="group-header">
+                                <h4>Window Settings</h4>
+                            </div>
+                            <div class="setting-item">
+                                <label class="setting-label" for="window-geometry-select">Default Window Size</label>
+                                <select id="window-geometry-select" class="setting-select">
+                                    <option value="1200x900">1200 × 900 (Default)</option>
+                                    <option value="1400x1000">1400 × 1000 (Large)</option>
+                                    <option value="1000x750">1000 × 750 (Compact)</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="settings-group">
+                            <div class="group-header">
+                                <h4>Accessibility</h4>
+                            </div>
+                            <div class="setting-item">
+                                <div class="setting-row">
+                                    <div class="setting-info">
+                                        <label class="setting-label">Reduce animations</label>
+                                        <div class="setting-note">Minimize UI animations and transitions</div>
+                                    </div>
+                                    <label class="toggle-switch">
+                                        <input type="checkbox" id="reduce-motion-checkbox">
+                                        <span class="toggle-slider"></span>
+                                    </label>
+                                </div>
+                            </div>
+                            
+                            <div class="setting-item">
+                                <div class="setting-row">
+                                    <div class="setting-info">
+                                        <label class="setting-label">High contrast mode</label>
+                                        <div class="setting-note">Increase contrast for better visibility</div>
+                                    </div>
+                                    <label class="toggle-switch">
+                                        <input type="checkbox" id="high-contrast-checkbox">
+                                        <span class="toggle-slider"></span>
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Action Bar -->
+                <div class="settings-actions">
+                    <div class="action-group">
+                        <button class="action-btn secondary" id="reset-settings-btn">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <polyline points="1,4 1,10 7,10"></polyline>
+                                <path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"></path>
+                            </svg>
+                            Reset
+                        </button>
+                        <button class="action-btn primary" id="apply-settings-btn">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <polyline points="20,6 9,17 4,12"></polyline>
+                            </svg>
+                            Save Changes
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Keyboard Shortcuts Modal -->
+        <div class="modal" id="shortcuts-modal" style="display: none;">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3>Keyboard Shortcuts</h3>
+                    <button class="close-btn" id="close-shortcuts-btn">×</button>
+                </div>
+                <div class="modal-body">
+                    <div class="shortcuts-section">
+                        <h4>Recording Controls:</h4>
+                        <div class="shortcut-item">
+                            <span class="shortcut-key">Ctrl+N</span>
+                            <span class="shortcut-desc">Start/Stop Recording</span>
+                        </div>
+                        <div class="shortcut-item">
+                            <span class="shortcut-key">Esc</span>
+                            <span class="shortcut-desc">Stop Recording (if active)</span>
+                        </div>
+                        <div class="shortcut-item">
+                            <span class="shortcut-key">Ctrl+Win+Space</span>
+                            <span class="shortcut-desc">Toggle Recording (global)</span>
+                        </div>
+                    </div>
+                    <div class="shortcuts-section">
+                        <h4>Text Management:</h4>
+                        <div class="shortcut-item">
+                            <span class="shortcut-key">Ctrl+S</span>
+                            <span class="shortcut-desc">Save Text</span>
+                        </div>
+                    </div>
+                    <div class="shortcuts-section">
+                        <h4>Application:</h4>
+                        <div class="shortcut-item">
+                            <span class="shortcut-key">Ctrl+,</span>
+                            <span class="shortcut-desc">Open Settings</span>
+                        </div>
+                        <div class="shortcut-item">
+                            <span class="shortcut-key">F1</span>
+                            <span class="shortcut-desc">Show About Dialog</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- About Modal -->
+        <div class="modal" id="about-modal" style="display: none;">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3>About VoiceForge</h3>
+                    <button class="close-btn" id="close-about-btn">×</button>
+                </div>
+                <div class="modal-body">
+                    <div class="about-content">
+                        <h4>VoiceForge v1.0.0</h4>
+                        <p>A powerful, modern desktop application for real-time speech-to-text transcription using OpenAI Whisper API. Transform your voice into text with professional accuracy and style.</p>
+                        
+                        <h5>Features:</h5>
+                        <ul>
+                            <li>Dark theme interface</li>
+                            <li>Real-time audio level visualization</li>
+                            <li>Voice activity detection</li>
+                            <li>Secure encrypted settings</li>
+                        </ul>
+                        
+                        <p class="about-footer">
+                            Built with Electron and Web Technologies<br>
+                            Licensed under MIT License<br><br>
+                            © 2025 VoiceForge Contributors
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="src/js/main.js"></script>
+</body>
+</html>
