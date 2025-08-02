@@ -52,6 +52,7 @@
   "build": {
     "appId": "com.voiceforge.app",
     "productName": "VoiceForge",
+    "copyright": "Copyright © 2025 VoiceForge Contributors",
     "directories": {
       "output": "dist-electron"
     },
@@ -61,15 +62,86 @@
       "node_modules/",
       "package.json"
     ],
+    "extraResources": [
+      {
+        "from": "assets/",
+        "to": "assets/",
+        "filter": ["**/*"]
+      }
+    ],
     "mac": {
       "category": "public.app-category.productivity",
-      "target": "dmg"
+      "target": [
+        {
+          "target": "dmg",
+          "arch": ["x64", "arm64"]
+        }
+      ],
+      "icon": "assets/icon.icns",
+      "entitlements": "build/entitlements.mac.plist",
+      "entitlementsInherit": "build/entitlements.mac.plist",
+      "darkModeSupport": true
     },
     "win": {
-      "target": "nsis"
+      "target": [
+        {
+          "target": "nsis",
+          "arch": ["x64", "ia32"]
+        },
+        {
+          "target": "portable",
+          "arch": ["x64"]
+        }
+      ],
+      "icon": "assets/icon.ico",
+      "publisherName": "VoiceForge Contributors"
     },
     "linux": {
-      "target": "AppImage"
+      "target": [
+        {
+          "target": "AppImage",
+          "arch": ["x64"]
+        },
+        {
+          "target": "deb",
+          "arch": ["x64"]
+        }
+      ],
+      "icon": "assets/icon.png",
+      "category": "AudioVideo"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "installerIcon": "assets/icon.ico",
+      "uninstallerIcon": "assets/icon.ico",
+      "installerHeaderIcon": "assets/icon.ico",
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "VoiceForge"
+    },
+    "dmg": {
+      "title": "VoiceForge ${version}",
+      "icon": "assets/icon.icns",
+      "background": "assets/dmg-background.png",
+      "contents": [
+        {
+          "x": 410,
+          "y": 150,
+          "type": "link",
+          "path": "/Applications"
+        },
+        {
+          "x": 130,
+          "y": 150,
+          "type": "file"
+        }
+      ]
+    },
+    "publish": {
+      "provider": "github",
+      "owner": "w3rc",
+      "repo": "voiceforge"
     }
   }
 }
