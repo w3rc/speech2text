@@ -17,6 +17,15 @@ contextBridge.exposeInMainWorld('electronAPI', {
     showSaveDialog: (options) => ipcRenderer.invoke('show-save-dialog', options),
     showMessageBox: (options) => ipcRenderer.invoke('show-message-box', options),
 
+    // Sound notifications
+    playNotificationSound: (soundType) => ipcRenderer.invoke('play-notification-sound', soundType),
+
+    // Auto-paste functionality
+    autoPasteText: (text) => ipcRenderer.invoke('auto-paste-text', text),
+
+    // Clipboard operations
+    copyToClipboard: (text) => ipcRenderer.invoke('copy-to-clipboard', text),
+
     // Menu event listeners
     onMenuSaveText: (callback) => ipcRenderer.on('menu-save-text', callback),
     onMenuToggleRecording: (callback) => ipcRenderer.on('menu-toggle-recording', callback),

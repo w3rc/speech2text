@@ -23,6 +23,8 @@ from .theme import DarkTheme, ModernComponents, AudioLevelMeter, StatusIndicator
 from .audio_monitor import AudioLevelMonitor
 from .global_hotkey import GlobalHotkeyManager
 from .animations import AnimationManager
+from .sound_notifications import SoundNotifications
+from .auto_paste import AutoPaste
 
 
 class ModernSpeechToTextApp:
@@ -52,6 +54,12 @@ class ModernSpeechToTextApp:
         
         # Animation manager
         self.animation_manager = AnimationManager(self.root)
+        
+        # Sound notifications
+        self.sound_notifications = SoundNotifications()
+        
+        # Auto-paste functionality
+        self.auto_paste = AutoPaste()
         
         # OpenAI client
         self.client: Optional[OpenAI] = None
@@ -459,6 +467,9 @@ class ModernSpeechToTextApp:
             # Update UI status
             self._update_status("recording")
             
+            # Play recording start sound
+            self.sound_notifications.play_recording_start()
+            
             # Start recording in separate thread
             self.recording_thread = threading.Thread(target=self._record_audio, daemon=True)
             self.recording_thread.start()
@@ -486,8 +497,14 @@ class ModernSpeechToTextApp:
         self.recording = False
         self.processing = True
         
+        # Play recording stop sound
+        self.sound_notifications.play_recording_stop()
+        
         # Update UI status
         self._update_status("processing")
+        
+        # Play transcription processing sound
+        self.sound_notifications.play_transcription_processing()
         
         # Stop recording stream
         if self.recording_stream:
@@ -562,6 +579,9 @@ class ModernSpeechToTextApp:
     
     def _display_transcription(self, text: str) -> None:
         """Display transcribed text with animation."""
+        # Play transcription complete sound
+        self.sound_notifications.play_transcription_complete()
+        
         # Animate text appearance
         def add_text():
             self.text_display.insert(tk.END, text + "\n\n")

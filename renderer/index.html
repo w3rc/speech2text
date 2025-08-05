@@ -109,6 +109,18 @@
                     </div>
                     
                     <div class="nav-section">
+                        <div class="nav-section-title">USER EXPERIENCE</div>
+                        <button class="nav-item" data-tab="notifications">
+                            <span class="nav-icon">🔊</span>
+                            <span class="nav-label">Notifications</span>
+                        </button>
+                        <button class="nav-item" data-tab="automation">
+                            <span class="nav-icon">⚡</span>
+                            <span class="nav-label">Automation</span>
+                        </button>
+                    </div>
+                    
+                    <div class="nav-section">
                         <div class="nav-section-title">APPEARANCE</div>
                         <button class="nav-item" data-tab="interface">
                             <span class="nav-icon">🎨</span>
@@ -371,6 +383,143 @@
                                 <label class="setting-label" for="filename-template-input">Filename Template</label>
                                 <input type="text" id="filename-template-input" class="setting-input" value="transcript_{{timestamp}}" placeholder="transcript_{{timestamp}}">
                                 <div class="setting-note">Use {{timestamp}}, {{date}}, {{time}} for dynamic names</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Notifications Tab -->
+                    <div class="settings-tab" id="notifications-tab">
+                        <div class="tab-header">
+                            <h3>Sound Notifications</h3>
+                            <p>Configure audio feedback for recording and transcription events</p>
+                        </div>
+                        
+                        <div class="settings-group">
+                            <div class="group-header">
+                                <h4>Notification Settings</h4>
+                            </div>
+                            <div class="setting-item">
+                                <div class="setting-row">
+                                    <div class="setting-info">
+                                        <label class="setting-label">Enable sound notifications</label>
+                                        <div class="setting-note">Play sound effects for recording and transcription events</div>
+                                    </div>
+                                    <label class="toggle-switch">
+                                        <input type="checkbox" id="sound-notifications-enabled-checkbox" checked>
+                                        <span class="toggle-slider"></span>
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="settings-group">
+                            <div class="group-header">
+                                <h4>Individual Notification Types</h4>
+                            </div>
+                            <div class="setting-item">
+                                <div class="setting-row">
+                                    <div class="setting-info">
+                                        <label class="setting-label">Recording start sound</label>
+                                        <div class="setting-note">Play sound when recording begins</div>
+                                    </div>
+                                    <label class="toggle-switch">
+                                        <input type="checkbox" id="recording-start-sound-checkbox" checked>
+                                        <span class="toggle-slider"></span>
+                                    </label>
+                                </div>
+                            </div>
+                            
+                            <div class="setting-item">
+                                <div class="setting-row">
+                                    <div class="setting-info">
+                                        <label class="setting-label">Recording stop sound</label>
+                                        <div class="setting-note">Play sound when recording ends</div>
+                                    </div>
+                                    <label class="toggle-switch">
+                                        <input type="checkbox" id="recording-stop-sound-checkbox" checked>
+                                        <span class="toggle-slider"></span>
+                                    </label>
+                                </div>
+                            </div>
+                            
+                            <div class="setting-item">
+                                <div class="setting-row">
+                                    <div class="setting-info">
+                                        <label class="setting-label">Transcription processing sound</label>
+                                        <div class="setting-note">Play sound when transcription begins</div>
+                                    </div>
+                                    <label class="toggle-switch">
+                                        <input type="checkbox" id="transcription-processing-sound-checkbox" checked>
+                                        <span class="toggle-slider"></span>
+                                    </label>
+                                </div>
+                            </div>
+                            
+                            <div class="setting-item">
+                                <div class="setting-row">
+                                    <div class="setting-info">
+                                        <label class="setting-label">Transcription complete sound</label>
+                                        <div class="setting-note">Play sound when transcription is finished</div>
+                                    </div>
+                                    <label class="toggle-switch">
+                                        <input type="checkbox" id="transcription-complete-sound-checkbox" checked>
+                                        <span class="toggle-slider"></span>
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Automation Tab -->
+                    <div class="settings-tab" id="automation-tab">
+                        <div class="tab-header">
+                            <h3>Automation Features</h3>
+                            <p>Configure automatic actions after transcription</p>
+                        </div>
+                        
+                        <div class="settings-group">
+                            <div class="group-header">
+                                <h4>Auto-Paste Settings</h4>
+                            </div>
+                            <div class="setting-item">
+                                <div class="setting-row">
+                                    <div class="setting-info">
+                                        <label class="setting-label">Enable auto-paste</label>
+                                        <div class="setting-note">Automatically paste transcribed text when a text field is active</div>
+                                    </div>
+                                    <label class="toggle-switch">
+                                        <input type="checkbox" id="auto-paste-enabled-checkbox">
+                                        <span class="toggle-slider"></span>
+                                    </label>
+                                </div>
+                            </div>
+                            
+                            <div class="setting-item">
+                                <div class="setting-row">
+                                    <div class="setting-info">
+                                        <label class="setting-label">Preserve clipboard</label>
+                                        <div class="setting-note">Restore original clipboard content after auto-paste</div>
+                                    </div>
+                                    <label class="toggle-switch">
+                                        <input type="checkbox" id="preserve-clipboard-checkbox" checked disabled>
+                                        <span class="toggle-slider"></span>
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="settings-group">
+                            <div class="group-header">
+                                <h4>Auto-Paste Information</h4>
+                            </div>
+                            <div class="setting-item">
+                                <div class="info-box">
+                                    <div class="info-icon">⚠️</div>
+                                    <div class="info-content">
+                                        <div class="info-title">Security Notice</div>
+                                        <div class="info-text">Auto-paste works by detecting when text fields are active and simulating keyboard input. This feature works with most applications but may not work with some secure applications or games. The transcribed text is temporarily placed on your clipboard during the paste operation.</div>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>

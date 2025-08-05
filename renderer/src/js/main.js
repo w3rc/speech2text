@@ -94,6 +94,17 @@ class Speech2TextApp {
             sessionUsage: document.getElementById('session-usage'),
             estimatedCost: document.getElementById('estimated-cost'),
             
+            // Sound notification elements
+            soundNotificationsEnabledCheckbox: document.getElementById('sound-notifications-enabled-checkbox'),
+            recordingStartSoundCheckbox: document.getElementById('recording-start-sound-checkbox'),
+            recordingStopSoundCheckbox: document.getElementById('recording-stop-sound-checkbox'),
+            transcriptionProcessingSoundCheckbox: document.getElementById('transcription-processing-sound-checkbox'),
+            transcriptionCompleteSoundCheckbox: document.getElementById('transcription-complete-sound-checkbox'),
+            
+            // Auto-paste elements
+            autoPasteEnabledCheckbox: document.getElementById('auto-paste-enabled-checkbox'),
+            preserveClipboardCheckbox: document.getElementById('preserve-clipboard-checkbox'),
+            
             // Modals
             shortcutsModal: document.getElementById('shortcuts-modal'),
             aboutModal: document.getElementById('about-modal'),
@@ -126,6 +137,28 @@ class Speech2TextApp {
         
         if (this.elements.themeSelect && this.settings.ui) {
             this.elements.themeSelect.value = this.settings.ui.theme || 'dark';
+        }
+        
+        // Populate sound notification settings
+        if (this.elements.soundNotificationsEnabledCheckbox && this.settings.sound_notifications) {
+            this.elements.soundNotificationsEnabledCheckbox.checked = this.settings.sound_notifications.enabled !== false;
+        }
+        if (this.elements.recordingStartSoundCheckbox && this.settings.sound_notifications) {
+            this.elements.recordingStartSoundCheckbox.checked = this.settings.sound_notifications.recording_start !== false;
+        }
+        if (this.elements.recordingStopSoundCheckbox && this.settings.sound_notifications) {
+            this.elements.recordingStopSoundCheckbox.checked = this.settings.sound_notifications.recording_stop !== false;
+        }
+        if (this.elements.transcriptionProcessingSoundCheckbox && this.settings.sound_notifications) {
+            this.elements.transcriptionProcessingSoundCheckbox.checked = this.settings.sound_notifications.transcription_processing !== false;
+        }
+        if (this.elements.transcriptionCompleteSoundCheckbox && this.settings.sound_notifications) {
+            this.elements.transcriptionCompleteSoundCheckbox.checked = this.settings.sound_notifications.transcription_complete !== false;
+        }
+        
+        // Populate auto-paste settings
+        if (this.elements.autoPasteEnabledCheckbox && this.settings.auto_paste) {
+            this.elements.autoPasteEnabledCheckbox.checked = this.settings.auto_paste.enabled === true;
         }
     }
     
@@ -251,6 +284,8 @@ class Speech2TextApp {
             'audio': 'Audio',
             'transcription': 'AI & Language',
             'output': 'Auto-Save',
+            'notifications': 'Notifications',
+            'automation': 'Automation',
             'interface': 'Theme'
         };
         
@@ -470,7 +505,7 @@ class Speech2TextApp {
             if (response.ok) {
                 this.updateApiKeyStatus('online', 'API key valid');
                 await this.showMessageBox({
-                    type: 'success',
+                    type: 'info',
                     title: 'API Key Test',
                     message: 'API key is valid and working!'
                 });
@@ -604,6 +639,9 @@ class Speech2TextApp {
             this.mediaRecorder.start();
             this.recording = true;
             
+            // Play recording start sound
+            window.electronAPI.playNotificationSound('recording_start');
+            
             // Update UI
             this.updateStatus('recording');
             this.startAudioLevelMonitoring();
@@ -627,6 +665,9 @@ class Speech2TextApp {
         this.recording = false;
         this.processing = true;
         
+        // Play recording stop sound
+        window.electronAPI.playNotificationSound('recording_stop');
+        
         // Stop MediaRecorder
         if (this.mediaRecorder && this.mediaRecorder.state !== 'inactive') {
             this.mediaRecorder.stop();
@@ -640,6 +681,9 @@ class Speech2TextApp {
         // Update UI
         this.updateStatus('processing');
         this.stopAudioLevelMonitoring();
+        
+        // Play transcription processing sound
+        window.electronAPI.playNotificationSound('transcription_processing');
         
         console.log('Recording stopped');
     }
@@ -687,6 +731,9 @@ class Speech2TextApp {
     }
     
     displayTranscription(text) {
+        // Play transcription complete sound
+        window.electronAPI.playNotificationSound('transcription_complete');
+        
         // Add to text display
         const currentText = this.elements.textDisplay.value;
         const newText = currentText + (currentText ? '\n\n' : '') + text;
@@ -698,10 +745,27 @@ class Speech2TextApp {
         // Add to activity history
         this.addActivityItem(text);
         
-        // Auto-copy to clipboard
-        navigator.clipboard.writeText(text).catch(err => {
+        // Auto-copy to clipboard using main process (more reliable)
+        window.electronAPI.copyToClipboard(text).then(success => {
+            if (success) {
+                console.log('Text successfully copied to clipboard');
+            } else {
+                console.warn('Failed to copy text to clipboard');
+            }
+        }).catch(err => {
             console.warn('Failed to copy to clipboard:', err);
         });
+        
+        // Safe auto-paste (doesn't interfere with clipboard)
+        if (this.settings.auto_paste && this.settings.auto_paste.enabled) {
+            console.log('Safe auto-paste enabled - typing text directly without clipboard interference');
+            // Call auto-paste but don't await it to avoid blocking
+            window.electronAPI.autoPasteText(text).catch(error => {
+                console.warn('Safe auto-paste failed (non-critical):', error);
+            });
+        } else {
+            console.log('Auto-paste disabled in settings');
+        }
         
         // Reset UI
         this.resetUI('Transcription complete');
@@ -757,12 +821,16 @@ class Speech2TextApp {
             
             // Click to copy full text
             itemElement.addEventListener('click', () => {
-                navigator.clipboard.writeText(item.text).then(() => {
-                    // Visual feedback
-                    itemElement.style.background = 'var(--accent-primary)';
-                    setTimeout(() => {
-                        itemElement.style.background = 'var(--bg-tertiary)';
-                    }, 200);
+                window.electronAPI.copyToClipboard(item.text).then((success) => {
+                    if (success) {
+                        // Visual feedback
+                        itemElement.style.background = 'var(--accent-primary)';
+                        setTimeout(() => {
+                            itemElement.style.background = 'var(--bg-tertiary)';
+                        }, 200);
+                    }
+                }).catch(err => {
+                    console.warn('Failed to copy activity item to clipboard:', err);
                 });
             });
             
@@ -1063,6 +1131,16 @@ class Speech2TextApp {
                 },
                 ui: {
                     theme: this.elements.themeSelect?.value || 'dark'
+                },
+                sound_notifications: {
+                    enabled: this.elements.soundNotificationsEnabledCheckbox?.checked || false,
+                    recording_start: this.elements.recordingStartSoundCheckbox?.checked || false,
+                    recording_stop: this.elements.recordingStopSoundCheckbox?.checked || false,
+                    transcription_processing: this.elements.transcriptionProcessingSoundCheckbox?.checked || false,
+                    transcription_complete: this.elements.transcriptionCompleteSoundCheckbox?.checked || false
+                },
+                auto_paste: {
+                    enabled: this.elements.autoPasteEnabledCheckbox?.checked || false
                 }
             };
             
@@ -1177,6 +1255,49 @@ class Speech2TextApp {
         return await window.electronAPI.showMessageBox(options);
     }
     
+    async performAutoPaste(text) {
+        // CRITICAL: Don't let auto-paste errors break the main transcription flow
+        try {
+            console.log('Calling auto-paste API for text:', text.substring(0, 20) + '...');
+            const result = await window.electronAPI.autoPasteText(text);
+            
+            if (result && result.success) {
+                console.log('Auto-paste successful:', result.message);
+                // Show subtle success feedback in footer
+                if (this.elements.footerText) {
+                    this.elements.footerText.textContent = 'Text auto-pasted • Modern Speech2Text v0.2.0';
+                    setTimeout(() => {
+                        if (this.elements.footerText) {
+                            this.elements.footerText.textContent = 'Modern Speech2Text v0.2.0';
+                        }
+                    }, 3000);
+                }
+            } else {
+                console.warn('Auto-paste failed:', result ? result.message : 'Unknown error');
+                // Show failure feedback
+                if (this.elements.footerText) {
+                    this.elements.footerText.textContent = 'Auto-paste failed - text copied to clipboard • Modern Speech2Text v0.2.0';
+                    setTimeout(() => {
+                        if (this.elements.footerText) {
+                            this.elements.footerText.textContent = 'Modern Speech2Text v0.2.0';
+                        }
+                    }, 5000);
+                }
+            }
+        } catch (error) {
+            console.error('Auto-paste error (non-fatal):', error);
+            // Show error feedback but don't fail
+            if (this.elements.footerText) {
+                this.elements.footerText.textContent = 'Auto-paste error - text copied to clipboard • Modern Speech2Text v0.2.0';
+                setTimeout(() => {
+                    if (this.elements.footerText) {
+                        this.elements.footerText.textContent = 'Modern Speech2Text v0.2.0';
+                    }
+                }, 5000);
+            }
+        }
+    }
+
     escapeHtml(text) {
         const div = document.createElement('div');
         div.textContent = text;
