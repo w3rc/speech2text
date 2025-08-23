@@ -12,8 +12,7 @@ wheels/
 # Virtual environments
 .venv
 
-So checking if the external keyboard functionality is working and the clipboard as well.
-
+# Assets
 assets/
 node_modules/
 
