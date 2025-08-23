@@ -38,12 +38,69 @@ const store = new Store({
         },
         auto_paste: {
             enabled: false
+        },
+        startup: {
+            launch_on_startup: false
         }
     }
 });
 
 let mainWindow;
 let openaiClient = null;
+
+// Auto-startup management
+function setAutoLaunch(enabled) {
+    if (process.platform !== 'win32') {
+        console.log('Auto-launch is only supported on Windows');
+        return false;
+    }
+
+    try {
+        const isDev = process.env.ELECTRON_IS_DEV || !app.isPackaged;
+        
+        if (enabled) {
+            if (isDev) {
+                // In development mode, warn user that auto-launch won't work properly
+                console.warn('Auto-launch in development mode - will launch default Electron, not your app');
+                console.warn('Please build and install the app first for proper auto-launch functionality');
+                return false;
+            }
+            
+            // Set the app to start on Windows startup (production only)
+            app.setLoginItemSettings({
+                openAtLogin: true,
+                openAsHidden: false,
+                path: process.execPath,
+                args: []
+            });
+            console.log('Auto-launch enabled for Windows startup');
+        } else {
+            // Remove from Windows startup
+            app.setLoginItemSettings({
+                openAtLogin: false
+            });
+            console.log('Auto-launch disabled');
+        }
+        return true;
+    } catch (error) {
+        console.error('Failed to configure auto-launch:', error);
+        return false;
+    }
+}
+
+function getAutoLaunchStatus() {
+    if (process.platform !== 'win32') {
+        return false;
+    }
+    
+    try {
+        const loginItemSettings = app.getLoginItemSettings();
+        return loginItemSettings.openAtLogin;
+    } catch (error) {
+        console.error('Failed to get auto-launch status:', error);
+        return false;
+    }
+}
 
 // Sound notification functions
 function playNotificationSound(soundType) {
@@ -363,7 +420,10 @@ function createWindow() {
         titleBarStyle: 'default',
         backgroundColor: '#1c1c1e',
         show: false,
-        icon: path.join(__dirname, '../assets/icon.png')
+        icon: path.join(__dirname, '../assets/icon.png'),
+        // Hide console window on Windows
+        skipTaskbar: false,
+        autoHideMenuBar: false
     });
 
     // Load the renderer
@@ -672,6 +732,19 @@ ipcMain.handle('copy-to-clipboard', (event, text) => {
         console.error('Failed to copy to clipboard:', error);
         return false;
     }
+});
+
+// Startup management handlers
+ipcMain.handle('set-auto-launch', (event, enabled) => {
+    const success = setAutoLaunch(enabled);
+    if (success) {
+        store.set('startup.launch_on_startup', enabled);
+    }
+    return success;
+});
+
+ipcMain.handle('get-auto-launch-status', () => {
+    return getAutoLaunchStatus();
 });
 
 // Safe Windows paste using direct text typing

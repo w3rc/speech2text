@@ -118,6 +118,10 @@
                             <span class="nav-icon">⚡</span>
                             <span class="nav-label">Automation</span>
                         </button>
+                        <button class="nav-item" data-tab="startup">
+                            <span class="nav-icon">🚀</span>
+                            <span class="nav-label">Startup</span>
+                        </button>
                     </div>
                     
                     <div class="nav-section">
@@ -518,6 +522,47 @@
                                     <div class="info-content">
                                         <div class="info-title">Security Notice</div>
                                         <div class="info-text">Auto-paste works by detecting when text fields are active and simulating keyboard input. This feature works with most applications but may not work with some secure applications or games. The transcribed text is temporarily placed on your clipboard during the paste operation.</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Startup Tab -->
+                    <div class="settings-tab" id="startup-tab">
+                        <div class="tab-header">
+                            <h3>Startup Settings</h3>
+                            <p>Configure application launch behavior</p>
+                        </div>
+                        
+                        <div class="settings-group">
+                            <div class="group-header">
+                                <h4>Windows Startup</h4>
+                            </div>
+                            <div class="setting-item">
+                                <div class="setting-row">
+                                    <div class="setting-info">
+                                        <label class="setting-label">Launch VoiceForge on Windows startup</label>
+                                        <div class="setting-note">Automatically start VoiceForge when Windows starts (app window only, no terminal)</div>
+                                    </div>
+                                    <label class="toggle-switch">
+                                        <input type="checkbox" id="launch-on-startup-checkbox">
+                                        <span class="toggle-slider"></span>
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="settings-group">
+                            <div class="group-header">
+                                <h4>Startup Information</h4>
+                            </div>
+                            <div class="setting-item">
+                                <div class="info-box">
+                                    <div class="info-icon">ℹ️</div>
+                                    <div class="info-content">
+                                        <div class="info-title">Auto-startup Requirements</div>
+                                        <div class="info-text">Auto-launch is only available in the built/installed version of VoiceForge. When enabled, the app will automatically launch when Windows starts with just the app window (no terminal). To use this feature, build the app with "npm run dist" and install the generated installer.</div>
                                     </div>
                                 </div>
                             </div>

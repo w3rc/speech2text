@@ -26,6 +26,10 @@ contextBridge.exposeInMainWorld('electronAPI', {
     // Clipboard operations
     copyToClipboard: (text) => ipcRenderer.invoke('copy-to-clipboard', text),
 
+    // Startup management
+    setAutoLaunch: (enabled) => ipcRenderer.invoke('set-auto-launch', enabled),
+    getAutoLaunchStatus: () => ipcRenderer.invoke('get-auto-launch-status'),
+
     // Menu event listeners
     onMenuSaveText: (callback) => ipcRenderer.on('menu-save-text', callback),
     onMenuToggleRecording: (callback) => ipcRenderer.on('menu-toggle-recording', callback),

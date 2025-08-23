@@ -105,6 +105,9 @@ class Speech2TextApp {
             autoPasteEnabledCheckbox: document.getElementById('auto-paste-enabled-checkbox'),
             preserveClipboardCheckbox: document.getElementById('preserve-clipboard-checkbox'),
             
+            // Startup elements
+            launchOnStartupCheckbox: document.getElementById('launch-on-startup-checkbox'),
+            
             // Modals
             shortcutsModal: document.getElementById('shortcuts-modal'),
             aboutModal: document.getElementById('about-modal'),
@@ -160,6 +163,9 @@ class Speech2TextApp {
         if (this.elements.autoPasteEnabledCheckbox && this.settings.auto_paste) {
             this.elements.autoPasteEnabledCheckbox.checked = this.settings.auto_paste.enabled === true;
         }
+        
+        // Populate startup settings
+        this.loadStartupSettings();
     }
     
     setupEventListeners() {
@@ -286,6 +292,7 @@ class Speech2TextApp {
             'output': 'Auto-Save',
             'notifications': 'Notifications',
             'automation': 'Automation',
+            'startup': 'Startup',
             'interface': 'Theme'
         };
         
@@ -1141,6 +1148,9 @@ class Speech2TextApp {
                 },
                 auto_paste: {
                     enabled: this.elements.autoPasteEnabledCheckbox?.checked || false
+                },
+                startup: {
+                    launch_on_startup: this.elements.launchOnStartupCheckbox?.checked || false
                 }
             };
             
@@ -1154,6 +1164,9 @@ class Speech2TextApp {
             
             // Update local settings
             this.settings = { ...this.settings, ...newSettings };
+            
+            // Apply startup settings separately (requires OS-level changes)
+            await this.applyStartupSettings();
             
             // Update API status
             this.updateAPIStatus();
@@ -1295,6 +1308,47 @@ class Speech2TextApp {
                     }
                 }, 5000);
             }
+        }
+    }
+
+    async loadStartupSettings() {
+        try {
+            const autoLaunchStatus = await window.electronAPI.getAutoLaunchStatus();
+            if (this.elements.launchOnStartupCheckbox) {
+                this.elements.launchOnStartupCheckbox.checked = autoLaunchStatus;
+            }
+            console.log('Auto-launch status loaded:', autoLaunchStatus);
+        } catch (error) {
+            console.warn('Failed to load startup settings:', error);
+        }
+    }
+
+    async applyStartupSettings() {
+        try {
+            if (this.elements.launchOnStartupCheckbox) {
+                const enabled = this.elements.launchOnStartupCheckbox.checked;
+                const success = await window.electronAPI.setAutoLaunch(enabled);
+                
+                if (success) {
+                    console.log(`Auto-launch ${enabled ? 'enabled' : 'disabled'} successfully`);
+                } else {
+                    if (enabled) {
+                        // Show warning about development mode
+                        await this.showMessageBox({
+                            type: 'warning',
+                            title: 'Auto-launch Not Available',
+                            message: 'Auto-launch is only available in the built/installed version of VoiceForge.\n\nTo use auto-launch:\n1. Build the app using "npm run dist"\n2. Install the generated installer\n3. Enable auto-launch in the installed version'
+                        });
+                    }
+                    console.warn('Failed to apply auto-launch setting');
+                    // Reset checkbox to previous state
+                    await this.loadStartupSettings();
+                }
+            }
+        } catch (error) {
+            console.error('Failed to apply startup settings:', error);
+            // Reset checkbox to previous state
+            await this.loadStartupSettings();
         }
     }
 
